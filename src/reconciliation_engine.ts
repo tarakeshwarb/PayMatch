@@ -379,6 +379,9 @@ export class ReconciliationEngine {
         // ── Pass 3: Combined payment detection ──
         this._passCombinedPayments(invoiceState, candidateTxns);
 
+        // ── Pass 3.5: Cross-client combined payment suggestions (review only) ──
+        this._passCrossClientCombined(invoiceState, candidateTxns);
+
         // ── Pass 4: Partial payments ──
         this._passPartialPayments(invoiceState, candidateTxns);
 
@@ -571,6 +574,85 @@ export class ReconciliationEngine {
                             note: `Possible combined payment (narration too weak to auto-confirm: ${bestNarrScore.toFixed(2)})`,
                         });
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * Pass 3.5: Cross-client combined payment suggestions.
+     * For large unmatched transactions with generic narrations ("Bulk payment"),
+     * try to find invoice subsets across ALL clients that sum to the amount.
+     * NEVER auto-matches — only adds candidates for human review.
+     */
+    private _passCrossClientCombined(invoiceState: Map<string, EngineInvoice>, candidateTxns: EngineTransaction[]) {
+        for (const txn of candidateTxns) {
+            if (txn.assigned) continue;
+            if (isLikelyNoise(txn.narration)) continue;
+
+            // Collect all open invoices (across all clients)
+            const openInvoices: EngineInvoice[] = [];
+            for (const [invId, inv] of Array.from(invoiceState.entries())) {
+                if (inv.status !== 'open') continue;
+                openInvoices.push(inv);
+            }
+
+            if (openInvoices.length < 2) continue;
+
+            // Try to find pairs that sum to the transaction amount
+            const tolerance = txn.amount * 0.005; // 0.5%
+            let bestPair: EngineInvoice[] | null = null;
+            let bestDiff = Infinity;
+
+            for (let i = 0; i < openInvoices.length; i++) {
+                for (let j = i + 1; j < openInvoices.length; j++) {
+                    const sum = openInvoices[i].amount + openInvoices[j].amount;
+                    const diff = Math.abs(sum - txn.amount);
+                    if (diff <= tolerance && diff < bestDiff) {
+                        bestDiff = diff;
+                        bestPair = [openInvoices[i], openInvoices[j]];
+                    }
+                }
+            }
+
+            // Also try triplets if no pair found
+            if (!bestPair && openInvoices.length >= 3) {
+                for (let i = 0; i < Math.min(openInvoices.length, 15); i++) {
+                    for (let j = i + 1; j < Math.min(openInvoices.length, 15); j++) {
+                        for (let k = j + 1; k < Math.min(openInvoices.length, 15); k++) {
+                            const sum = openInvoices[i].amount + openInvoices[j].amount + openInvoices[k].amount;
+                            const diff = Math.abs(sum - txn.amount);
+                            if (diff <= tolerance && diff < bestDiff) {
+                                bestDiff = diff;
+                                bestPair = [openInvoices[i], openInvoices[j], openInvoices[k]];
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (bestPair) {
+                const totalAmount = bestPair.reduce((s, inv) => s + inv.amount, 0);
+                const clients = [...new Set(bestPair.map(inv => inv.client_name))];
+                const isCrossClient = clients.length > 1;
+
+                // Flag as low-confidence candidate — NEVER auto-match cross-client
+                for (const inv of bestPair) {
+                    // Don't add duplicate candidates
+                    const alreadyHas = inv.candidateTransactions.some(
+                        c => c.transaction_id === txn.transaction_id
+                    );
+                    if (alreadyHas) continue;
+
+                    inv.candidateTransactions.push({
+                        transaction_id: txn.transaction_id,
+                        amount: txn.amount,
+                        date: txn.date,
+                        narration: txn.narration,
+                        confidence: 0.40,
+                        matchType: 'combined',
+                        note: `Possible ${isCrossClient ? 'cross-client ' : ''}combined payment: ${bestPair.map(i => i.invoice_id).join(' + ')} = ₹${totalAmount.toFixed(2)} (diff ₹${bestDiff.toFixed(2)}). Clients: ${clients.join(', ')}`,
+                    });
                 }
             }
         }

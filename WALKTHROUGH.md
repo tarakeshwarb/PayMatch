@@ -72,15 +72,15 @@ Two completely separate datasets generated with **different random seeds** and *
 
 | File | Purpose |
 |---|---|
-| [`data/generate_synthetic_data.ts`](file:///c:/Users/khani/Downloads/New%20folder/data/generate_synthetic_data.ts) | Data generator script (run with `npx tsx data/generate_synthetic_data.ts`) |
-| [`data/tuning/invoices.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/invoices.csv) | Tuning set — invoice register (100 rows) |
-| [`data/tuning/bank_statement.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/bank_statement.csv) | Tuning set — bank statement (98 rows incl. noise) |
-| [`data/tuning/ground_truth.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/ground_truth.csv) | Tuning set — answer key mapping each invoice to its transaction |
-| [`data/tuning/client_risk_profiles.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/client_risk_profiles.csv) | True risk tier per client (for risk model validation) |
-| [`data/test/invoices.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/invoices.csv) | Held-out test set — invoices (50 rows) |
-| [`data/test/bank_statement.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/bank_statement.csv) | Held-out test set — bank statement (58 rows) |
-| [`data/test/ground_truth.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/ground_truth.csv) | Held-out test set — answer key (DO NOT look at until Day 7) |
-| [`data/test/client_risk_profiles.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/client_risk_profiles.csv) | Held-out test set — true risk tiers |
+| [`data/generate_synthetic_data.ts`](./data/generate_synthetic_data.ts) | Data generator script (run with `npx tsx data/generate_synthetic_data.ts`) |
+| [`data/tuning/invoices.csv`](./data/tuning/invoices.csv) | Tuning set — invoice register (100 rows) |
+| [`data/tuning/bank_statement.csv`](./data/tuning/bank_statement.csv) | Tuning set — bank statement (98 rows incl. noise) |
+| [`data/tuning/ground_truth.csv`](./data/tuning/ground_truth.csv) | Tuning set — answer key mapping each invoice to its transaction |
+| [`data/tuning/client_risk_profiles.csv`](./data/tuning/client_risk_profiles.csv) | True risk tier per client (for risk model validation) |
+| [`data/test/invoices.csv`](./data/test/invoices.csv) | Held-out test set — invoices (50 rows) |
+| [`data/test/bank_statement.csv`](./data/test/bank_statement.csv) | Held-out test set — bank statement (58 rows) |
+| [`data/test/ground_truth.csv`](./data/test/ground_truth.csv) | Held-out test set — answer key (DO NOT look at until Day 7) |
+| [`data/test/client_risk_profiles.csv`](./data/test/client_risk_profiles.csv) | Held-out test set — true risk tiers |
 
 ---
 
@@ -145,9 +145,9 @@ All 16 remaining misses are **combined payments** flagged for human review or un
 
 | File | Purpose |
 |---|---|
-| [`src/reconciliation_engine.ts`](file:///c:/Users/khani/Downloads/New%20folder/src/reconciliation_engine.ts) | Core engine — 5-pass matcher with scoring functions |
-| [`src/run_reconciliation.ts`](file:///c:/Users/khani/Downloads/New%20folder/src/run_reconciliation.ts) | Runner + evaluator — loads CSVs, runs engine, compares to ground truth |
-| [`output/reconciliation_tuning.json`](file:///c:/Users/khani/Downloads/New%20folder/output/reconciliation_tuning.json) | Full results from latest tuning run |
+| [`src/reconciliation_engine.ts`](./src/reconciliation_engine.ts) | Core engine — 5-pass matcher with scoring functions |
+| [`src/run_reconciliation.ts`](./src/run_reconciliation.ts) | Runner + evaluator — loads CSVs, runs engine, compares to ground truth |
+| [`output/reconciliation_tuning.json`](./output/reconciliation_tuning.json) | Full results from latest tuning run |
 
 ---
 

@@ -39,17 +39,17 @@
 
 ---
 
-## Day 3 — Validate + Tune the Matcher
+## Day 3 — Validate + Tune the Matcher ✅
 
-- [ ] Run matcher on tuning synthetic set
-- [ ] Calculate auto-match rate (correct matches / total matchable)
-- [ ] Calculate false-match rate (wrongly matched / total matches made)
-- [ ] Tune confidence thresholds to minimize false-match rate
-- [ ] Build exception list output:
-  - [ ] For low-confidence cases, show closest candidate transaction
-  - [ ] Include confidence score and reason for uncertainty
-  - [ ] Format for one-click human confirm/reject
-- [ ] Log all metrics to a results file
+- [x] Run matcher on tuning synthetic set
+- [x] Calculate auto-match rate (correct matches / total matchable)
+- [x] Calculate false-match rate (wrongly matched / total matches made)
+- [x] Tune confidence thresholds to minimize false-match rate
+- [x] Build exception list output:
+  - [x] For low-confidence cases, show closest candidate transaction
+  - [x] Include confidence score and reason for uncertainty
+  - [x] Format for one-click human confirm/reject
+- [x] Log all metrics to a results file
 
 ---
 
