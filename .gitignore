@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+.env.test
+
+# Build and output directories
+output/
+dist/
+build/
+coverage/
+
+# Editor and OS specific files
+.DS_Store
+.vscode/
+.idea/
+*.log

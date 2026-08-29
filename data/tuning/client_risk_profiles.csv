@@ -1,0 +1,21 @@
+client_name,true_risk,avg_delay_days,delay_std_days
+Iyer Technologies,low,0,2
+Singh Brothers,low,0,1
+Malhotra Auto Parts,medium,6,4
+Gupta & Sons Pvt Ltd,high,20,10
+Kapoor Industries,low,-1,2
+Desai Agro,medium,5,4
+Reddy Chemicals,low,-1,2
+Nair Exports,medium,12,6
+Bose Engineering,high,15,7
+Joshi Packaging,low,2,3
+Verma Logistics,medium,7,5
+Chopra Foods,high,22,12
+Das Furniture,medium,9,5
+Patel Construction,high,25,15
+Priya Enterprises,low,0,2
+Bhatt & Associates,high,18,8
+Rajesh Textiles,low,-2,3
+Anand Pharma,medium,10,4
+Mehta Electronics,medium,8,5
+Sharma Trading Co,low,1,3

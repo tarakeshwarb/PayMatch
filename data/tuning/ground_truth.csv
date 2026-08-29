@@ -1,0 +1,101 @@
+invoice_id,transaction_id,match_type,paid_amount,notes
+INV-0008,TXN-00001,exact,70500,Exact amount match
+INV-0094,TXN-00002,exact,11500,Exact amount match
+INV-0040,TXN-00003,exact,5000,Exact amount match
+INV-0076,TXN-00004,partial,26684.28,Partial payment: 26684.28 of 50400
+INV-0056,TXN-00005,exact,443200,Exact amount match
+INV-0063,TXN-00006,exact,5800,Exact amount match
+INV-0045,TXN-00007,exact,147500,Exact amount match
+INV-0030,TXN-00008,combined,34100,Combined with INV-0089
+INV-0089,TXN-00008,combined,133500,Combined with INV-0030
+INV-0055,,unpaid,0,No payment received
+INV-0092,TXN-00009,exact,10000,Exact amount match
+INV-0057,TXN-00010,exact,44962.34,Exact amount match
+INV-0012,TXN-00011,partial,87900,Partial payment: 87900 of 132000
+INV-0013,TXN-00012,exact,35000,Exact amount match
+INV-0010,TXN-00013,rounding,6001,Rounding diff: 1
+INV-0033,TXN-00014,combined,45700,Combined with INV-0097
+INV-0097,TXN-00014,combined,147900,Combined with INV-0033
+INV-0085,TXN-00015,combined,37200,Combined with INV-0026
+INV-0026,TXN-00015,combined,6700,Combined with INV-0085
+INV-0075,TXN-00016,exact,33000,Exact amount match
+INV-0028,TXN-00017,combined,304000,Combined with INV-0079
+INV-0079,TXN-00017,combined,318000,Combined with INV-0028
+INV-0100,TXN-00018,exact,14500,Exact amount match
+INV-0006,TXN-00019,typo,262000,Narration has typo in client name
+INV-0068,TXN-00020,exact,45000,Exact amount match
+INV-0039,TXN-00021,partial,68000,Partial payment: 68000 of 76500
+INV-0025,TXN-00022,exact,73500,Exact amount match
+INV-0015,TXN-00023,exact,79500,Exact amount match
+INV-0091,TXN-00024,exact,150000,Exact amount match
+INV-0086,TXN-00025,combined,137500,Combined with INV-0058
+INV-0058,TXN-00025,combined,74000,Combined with INV-0086
+INV-0069,TXN-00026,rounding,13510,Rounding diff: 10
+INV-0043,TXN-00027,exact,129500,Exact amount match
+INV-0080,TXN-00028,combined,39000,Combined with INV-0004
+INV-0004,TXN-00028,combined,11000,Combined with INV-0080
+INV-0067,TXN-00029,typo,78500,Narration has typo in client name
+INV-0072,TXN-00030,exact,24000,Exact amount match
+INV-0041,TXN-00031,exact,32500,Exact amount match
+INV-0095,TXN-00032,rounding,90995,Rounding diff: -5
+INV-0037,TXN-00033,partial,260488.39,Partial payment: 260488.39 of 424500
+INV-0007,TXN-00034,partial,67900,Partial payment: 67900 of 74500
+INV-0016,TXN-00035,exact,183000,Exact amount match
+INV-0062,TXN-00036,exact,12300,Exact amount match
+INV-0098,TXN-00037,typo,231500,Narration has typo in client name
+INV-0034,TXN-00038,exact,203000,Exact amount match
+INV-0074,TXN-00039,typo,417115.76,Narration has typo in client name
+INV-0087,TXN-00040,partial,34100,Partial payment: 34100 of 44500
+INV-0065,TXN-00041,rounding,234510,Rounding diff: 10
+INV-0023,TXN-00042,partial,66800,Partial payment: 66800 of 79500
+INV-0090,TXN-00043,exact,11800,Exact amount match
+INV-0044,TXN-00044,exact,6000,Exact amount match
+INV-0066,TXN-00045,rounding,14005,Rounding diff: 5
+INV-0019,TXN-00046,typo,13500,Narration has typo in client name
+INV-0011,TXN-00047,exact,177153.84,Exact amount match
+INV-0005,TXN-00048,typo,335500,Narration has typo in client name
+INV-0064,TXN-00049,partial,166181.32,Partial payment: 166181.32 of 211500
+INV-0027,TXN-00050,combined,71000,Combined with INV-0036
+INV-0036,TXN-00050,combined,5500,Combined with INV-0027
+INV-0060,,unpaid,0,No payment received
+INV-0021,TXN-00051,exact,12100,Exact amount match
+INV-0082,TXN-00052,exact,15000,Exact amount match
+INV-0018,TXN-00053,exact,22243.39,Exact amount match
+INV-0077,TXN-00054,rounding,36599.5,Rounding diff: -0.5
+INV-0070,TXN-00055,typo,32800,Narration has typo in client name
+INV-0071,TXN-00056,exact,271000,Exact amount match
+INV-0047,TXN-00057,exact,136000,Exact amount match
+INV-0096,TXN-00058,typo,78193.7,Narration has typo in client name
+INV-0003,TXN-00059,exact,10000,Exact amount match
+INV-0020,TXN-00060,combined,468000,Combined with INV-0046
+INV-0046,TXN-00060,combined,338000,Combined with INV-0020
+INV-0009,TXN-00061,exact,119300,Exact amount match
+INV-0002,TXN-00062,typo,315500,Narration has typo in client name
+INV-0024,TXN-00063,exact,26800,Exact amount match
+INV-0099,,unpaid,0,No payment received
+INV-0054,TXN-00064,typo,46300,Narration has typo in client name
+INV-0001,TXN-00065,exact,44800,Exact amount match
+INV-0014,TXN-00066,partial,18900,Partial payment: 18900 of 30700
+INV-0032,TXN-00067,exact,435592.08,Exact amount match
+INV-0050,TXN-00068,exact,45500,Exact amount match
+INV-0083,TXN-00069,partial,147400,Partial payment: 147400 of 264700
+INV-0088,TXN-00070,partial,9581.94,Partial payment: 9581.94 of 11000
+INV-0084,TXN-00071,rounding,8750,Rounding diff: 50
+INV-0053,TXN-00072,partial,51200,Partial payment: 51200 of 68588.98
+INV-0038,TXN-00073,rounding,30999,Rounding diff: -1
+INV-0073,TXN-00074,exact,24000,Exact amount match
+INV-0051,TXN-00075,combined,133675.83,Combined with INV-0078
+INV-0078,TXN-00075,combined,31400,Combined with INV-0051
+INV-0048,TXN-00076,rounding,41502,Rounding diff: 2
+INV-0059,TXN-00077,partial,76323.06,Partial payment: 76323.06 of 99000
+INV-0081,,unpaid,0,No payment received
+INV-0052,,unpaid,0,No payment received
+INV-0017,TXN-00078,partial,6578.43,Partial payment: 6578.43 of 12100
+INV-0042,TXN-00079,partial,6500,Partial payment: 6500 of 12000
+INV-0035,TXN-00080,exact,145600,Exact amount match
+INV-0049,TXN-00081,exact,494500,Exact amount match
+INV-0031,TXN-00082,typo,5500,Narration has typo in client name
+INV-0061,TXN-00083,typo,15000,Narration has typo in client name
+INV-0093,TXN-00084,combined,44000,Combined with INV-0029
+INV-0029,TXN-00084,combined,307500,Combined with INV-0093
+INV-0022,TXN-00085,typo,15000,Narration has typo in client name
