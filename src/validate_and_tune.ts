@@ -62,7 +62,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
     });
 
     let truePositives = 0, falsePositives = 0, trueNegatives = 0, falseNegatives = 0;
-    let correctPartials = 0, correctCombined = 0;
+    let correctPartials = 0, correctCombined = 0, correctTds = 0;
     let lowConfCorrectInCandidates = 0;
     const errors: any[] = [];
 
@@ -82,6 +82,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
                     truePositives++;
                     if (gtMatchType === 'partial') correctPartials++;
                     if (gtMatchType === 'combined') correctCombined++;
+                    if (gtMatchType === 'tds') correctTds++;
                 } else {
                     falsePositives++;
                     errors.push({
@@ -147,6 +148,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
             false_negatives: falseNegatives,
             correct_partials: correctPartials,
             correct_combined: correctCombined,
+            correct_tds: correctTds,
             low_conf_correct_in_candidates: lowConfCorrectInCandidates,
             total_paid_in_gt: uniquePaidInvoices,
             total_unpaid_in_gt: groundTruth.filter(gt => gt.match_type === 'unpaid').length,
@@ -298,6 +300,7 @@ function main() {
     console.log(`  Low-conf w/ correct candidate:${metrics.low_conf_correct_in_candidates}`);
     console.log(`  Correct partials:             ${metrics.correct_partials}`);
     console.log(`  Correct combined:             ${metrics.correct_combined}`);
+    console.log(`  Correct TDS deductions:       ${metrics.correct_tds}`);
 
     if (errors.length > 0) {
         console.log(`\n── ERRORS (${errors.length}) ──`);

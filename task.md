@@ -17,6 +17,7 @@
   - [x] Rounding differences (e.g. ₹9,999 vs ₹10,000)
   - [x] Duplicate-looking transactions (same amount, different clients)
   - [x] Payments with no matching invoice (noise)
+  - [x] TDS Deductions (short-pays of exactly 2% or 10%)
 - [x] Split into tuning set + held-out test set (separate rows, no overlap)
 - [x] Export as CSV files
 
@@ -46,10 +47,20 @@
 - [x] Calculate false-match rate (wrongly matched / total matches made)
 - [x] Tune confidence thresholds to minimize false-match rate
 - [x] Build exception list output:
-  - [x] For low-confidence cases, show closest candidate transaction
+- [x] For low-confidence cases, show closest candidate transaction
   - [x] Include confidence score and reason for uncertainty
   - [x] Format for one-click human confirm/reject
 - [x] Log all metrics to a results file
+
+---
+
+## Day 3.5 — TDS (Tax) Deduction Detection ✅
+
+- [x] Update `data/generate_synthetic_data.ts` to inject 5 common Indian TDS rates (1%, 2%, 5%, 10%, 20%)
+- [x] Update `src/reconciliation_engine.ts` with comprehensive ratio detection (0.99, 0.98, 0.95, 0.90, 0.80)
+- [x] Add safety guardrail requiring higher confidence / narration match for non-exact matches
+- [x] Update `src/validate_and_tune.ts` to evaluate TDS detection accuracy & log metrics
+- [x] Regenerate datasets and verify performance (11/11 TDS caught, 0.0% false match rate, 100% precision)
 
 ---
 

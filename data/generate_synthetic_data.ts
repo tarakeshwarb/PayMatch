@@ -311,8 +311,8 @@ function generateBankTransactions(invoices: Invoice[]) {
         const txnId = `TXN-${String(txnCounter).padStart(5, '0')}`;
         txnCounter++;
 
-        if (messType < 0.45) {
-            // ── 45% — Clean exact payment ──
+        if (messType < 0.40) {
+            // ── 40% — Clean exact payment ──
             const narration = generateNarration(inv, { clean: random() < 0.5 });
 
             transactions.push({
@@ -328,6 +328,31 @@ function generateBankTransactions(invoices: Invoice[]) {
                 match_type: "exact",
                 paid_amount: inv.amount,
                 notes: "Exact amount match",
+            });
+            i++;
+        }
+        else if (messType < 0.50) {
+            // ── 10% — TDS Deduction (common Indian rates: 1%, 2%, 5%, 10%, 20%) ──
+            const tdsRates = [0.01, 0.02, 0.05, 0.10, 0.20];
+            const tdsRate = randChoice(tdsRates);
+            const tdsAmount = Math.round(inv.amount * tdsRate);
+            const paidAmount = +(inv.amount - tdsAmount).toFixed(2);
+
+            const narration = generateNarration(inv, { clean: random() < 0.5 });
+
+            transactions.push({
+                transaction_id: txnId,
+                date: formatDate(paymentDate),
+                amount: paidAmount,
+                narration: narration,
+                type: "CREDIT",
+            });
+            groundTruth.push({
+                invoice_id: inv.invoice_id,
+                transaction_id: txnId,
+                match_type: "tds",
+                paid_amount: paidAmount,
+                notes: `TDS deducted at ${tdsRate * 100}%`,
             });
             i++;
         }

@@ -73,6 +73,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
     let falseNegatives = 0;    // missed a match (invoice should be paid but isn't)
     let correctPartials = 0;
     let correctCombined = 0;
+    let correctTds = 0;
 
     const errors: ErrorCase[] = []; // detailed error cases
 
@@ -103,6 +104,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
                     truePositives++;
                     if (gtMatchType === 'partial') correctPartials++;
                     if (gtMatchType === 'combined') correctCombined++;
+                    if (gtMatchType === 'tds') correctTds++;
                 } else {
                     // Matched, but to the WRONG transaction
                     falsePositives++;
@@ -191,6 +193,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
             false_negatives: falseNegatives,
             correct_partials: correctPartials,
             correct_combined: correctCombined,
+            correct_tds: correctTds,
             total_paid_in_gt: uniquePaidInvoices,
             total_unpaid_in_gt: totalUnpaid,
         },
@@ -242,6 +245,7 @@ function main() {
     console.log(`  Missed (review):    ${metrics.false_negatives} invoices need human review`);
     console.log(`  Correct partials:   ${metrics.correct_partials}`);
     console.log(`  Correct combined:   ${metrics.correct_combined}`);
+    console.log(`  Correct TDS:        ${metrics.correct_tds}`);
 
     if (errors.length > 0) {
         console.log(`\n── ERRORS & EDGE CASES (${errors.length}) ──`);

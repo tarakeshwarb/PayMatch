@@ -10,7 +10,7 @@
 
 ## Day 1 — Scope + Data
 
-Build a synthetic test dataset yourself: a mock invoice register (invoice ID, client, amount, due date) + a mock bank statement (date, amount, narration text). Deliberately inject realistic mess: partial payments, one bank transaction covering two invoices, typos in the narration, rounding differences.
+Build a synthetic test dataset yourself: a mock invoice register (invoice ID, client, amount, due date) + a mock bank statement (date, amount, narration text). Deliberately inject realistic mess: partial payments, combined payments, typos in the narration, rounding differences, and TDS (Tax Deducted at Source) deductions (e.g. 2% or 10% short-pays).
 
 This synthetic set is what you'll tune on Days 2-3 and test on fresh on Day 7 — don't reuse the same rows for both.
 
@@ -22,6 +22,7 @@ Fuzzy-match each bank transaction to open invoices on: amount (exact or partial-
 
 Three output buckets per invoice:
 - **Matched** (paid)
+- **Matched (TDS Deducted)** (recognized as a tax short-pay)
 - **Unmatched** (still open)
 - **Low-confidence** (flag for manual review — never auto-close on a shaky match)
 

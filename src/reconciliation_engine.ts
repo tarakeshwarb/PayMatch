@@ -114,14 +114,30 @@ export function scoreAmount(txnAmount: number, invoiceAmount: number): { score: 
         return { score: 0.95, type: 'rounding' };
     }
 
-    // Close match: within 1%
+    // TDS Deduction: common Indian TDS rates — 1%, 2%, 5%, 10%, 20% (no-PAN)
+    // Check if paid amount = invoice_amount × (1 − rate) within rounding tolerance
+    // MUST come before generic rounding checks so 1%/2% TDS isn't misclassified
+    if (txnAmount < invoiceAmount) {
+        const ratio = txnAmount / invoiceAmount;
+        const tdsRatios = [0.99, 0.98, 0.95, 0.90, 0.80]; // (1 - 1%), (1 - 2%), (1 - 5%), (1 - 10%), (1 - 20%)
+        const tolerance = 0.005; // 0.5% rounding tolerance
+        for (const expectedRatio of tdsRatios) {
+            if (Math.abs(ratio - expectedRatio) <= tolerance) {
+                const tdsRate = Math.round((1 - expectedRatio) * 100);
+                return { score: 0.92, type: `tds_${tdsRate}pct` };
+            }
+        }
+    }
+
+    // Close match: within 1% (but not TDS — those are caught above)
     if (pctDiff <= 0.01) {
         return { score: 0.90, type: 'rounding' };
     }
 
     // Wider rounding: within 2% (for larger rounding diffs)
+    // Classified as 'rounding_wide' — not safe to auto-match without strong evidence
     if (pctDiff <= 0.02) {
-        return { score: 0.80, type: 'rounding' };
+        return { score: 0.80, type: 'rounding_wide' };
     }
 
     // Partial payment: 40-99% of invoice
@@ -494,6 +510,16 @@ export class ReconciliationEngine {
             const isAmbiguous = gap < this.ambiguityGap && secondBest;
 
             if (bestMatch.composite >= this.matchThreshold && !isAmbiguous) {
+                // Extra safety: for non-exact amounts (TDS, partial), require stronger evidence
+                // to prevent a partial payment for Invoice A being wrongly matched to Invoice B
+                const isNonExact = bestMatch.amountType !== 'exact' && bestMatch.amountType !== 'rounding';
+                const invoiceIdInNarration = txn.narration.toUpperCase().includes(bestMatch.invoice.invoice_id.toUpperCase());
+                
+                if (isNonExact && !invoiceIdInNarration && bestMatch.composite < 0.85) {
+                    // Not confident enough for a non-exact match without invoice ID — flag for review
+                    continue;
+                }
+
                 this._assignMatch(bestMatch.invoice, txn, {
                     confidence: bestMatch.composite,
                     matchType: bestMatch.amountType,

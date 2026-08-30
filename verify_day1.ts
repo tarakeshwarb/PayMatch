@@ -99,6 +99,7 @@ Object.entries(matchTypes).forEach(([type, count]) => {
 });
 
 check('Has partial payments', (matchTypes['partial'] || 0) > 0, `${matchTypes['partial'] || 0} cases`);
+check('Has TDS deductions', (matchTypes['tds'] || 0) > 0, `${matchTypes['tds'] || 0} cases`);
 check('Has combined payments (1 txn → 2+ invoices)', (matchTypes['combined'] || 0) > 0, `${matchTypes['combined'] || 0} cases`);
 check('Has typos in narration', (matchTypes['typo'] || 0) > 0, `${matchTypes['typo'] || 0} cases`);
 check('Has rounding differences', (matchTypes['rounding'] || 0) > 0, `${matchTypes['rounding'] || 0} cases`);

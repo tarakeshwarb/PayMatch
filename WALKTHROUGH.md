@@ -40,7 +40,8 @@ The whole point of the synthetic data is to stress-test the matcher with real-wo
 
 | Mess Type | % of invoices | Example | Why it's realistic |
 |---|---|---|---|
-| **Exact match** | ~45% | Amount and narration match cleanly | Baseline — most payments do match |
+| **Exact match** | ~40% | Amount and narration match cleanly | Baseline — most payments do match |
+| **TDS Deduction** | ~10% | ₹90,000 paid against ₹100,000 invoice (10% TDS) | Clients deduct tax at source (2% or 10%) |
 | **Partial payment** | ~15% | ₹87,900 paid against ₹132,000 invoice | Clients pay in installments |
 | **Combined payment** | ~12% | One ₹167,600 txn covers INV-0030 + INV-0089 | Clients batch-pay multiple invoices in one NEFT |
 | **Typo in narration** | ~15% | "Kapoor Industris" instead of "Kapoor Industries" | Banks truncate/mangle names |
@@ -72,15 +73,15 @@ Two completely separate datasets generated with **different random seeds** and *
 
 | File | Purpose |
 |---|---|
-| [`data/generate_synthetic_data.ts`](./data/generate_synthetic_data.ts) | Data generator script (run with `npx tsx data/generate_synthetic_data.ts`) |
-| [`data/tuning/invoices.csv`](./data/tuning/invoices.csv) | Tuning set — invoice register (100 rows) |
-| [`data/tuning/bank_statement.csv`](./data/tuning/bank_statement.csv) | Tuning set — bank statement (98 rows incl. noise) |
-| [`data/tuning/ground_truth.csv`](./data/tuning/ground_truth.csv) | Tuning set — answer key mapping each invoice to its transaction |
-| [`data/tuning/client_risk_profiles.csv`](./data/tuning/client_risk_profiles.csv) | True risk tier per client (for risk model validation) |
-| [`data/test/invoices.csv`](./data/test/invoices.csv) | Held-out test set — invoices (50 rows) |
-| [`data/test/bank_statement.csv`](./data/test/bank_statement.csv) | Held-out test set — bank statement (58 rows) |
-| [`data/test/ground_truth.csv`](./data/test/ground_truth.csv) | Held-out test set — answer key (DO NOT look at until Day 7) |
-| [`data/test/client_risk_profiles.csv`](./data/test/client_risk_profiles.csv) | Held-out test set — true risk tiers |
+| [`data/generate_synthetic_data.ts`](file:///c:/Users/khani/Downloads/New%20folder/data/generate_synthetic_data.ts) | Data generator script (run with `npx tsx data/generate_synthetic_data.ts`) |
+| [`data/tuning/invoices.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/invoices.csv) | Tuning set — invoice register (100 rows) |
+| [`data/tuning/bank_statement.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/bank_statement.csv) | Tuning set — bank statement (98 rows incl. noise) |
+| [`data/tuning/ground_truth.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/ground_truth.csv) | Tuning set — answer key mapping each invoice to its transaction |
+| [`data/tuning/client_risk_profiles.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/tuning/client_risk_profiles.csv) | True risk tier per client (for risk model validation) |
+| [`data/test/invoices.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/invoices.csv) | Held-out test set — invoices (50 rows) |
+| [`data/test/bank_statement.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/bank_statement.csv) | Held-out test set — bank statement (58 rows) |
+| [`data/test/ground_truth.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/ground_truth.csv) | Held-out test set — answer key (DO NOT look at until Day 7) |
+| [`data/test/client_risk_profiles.csv`](file:///c:/Users/khani/Downloads/New%20folder/data/test/client_risk_profiles.csv) | Held-out test set — true risk tiers |
 
 ---
 
@@ -131,29 +132,44 @@ Composite score weights shift based on signal strength — when narration is str
 
 ### Tuning metrics progression
 
-| Version | Auto-match rate | False-match rate | Precision |
-|---|---|---|---|
-| v1 (initial) | 69.5% | 15.4% | 84.6% |
-| v2 (noise + threshold fixes) | 75.8% | 8.9% | 91.1% |
-| **v3 (bug fix + tolerance)** | **83.2%** | **0.0%** | **100%** |
+| Version | Auto-match rate | False-match rate | Precision | Notes |
+|---|---|---|---|---|
+| v1 (initial) | 69.5% | 15.4% | 84.6% | Baseline |
+| v2 (noise + threshold fixes) | 75.8% | 8.9% | 91.1% | Tightened combined payment logic |
+| v3 (bug fix + tolerance) | 83.2% | 0.0% | 100% | Zero false matches on baseline dataset |
+| **v4 (5-rate TDS + safety check)** | **75.5%** | **0.0%** | **100%** | **11/11 TDS caught, 0% false matches on high-mess dataset** |
 
 ### Remaining misses (by design)
 
-All 16 remaining misses are **combined payments** flagged for human review or unmatched — the engine correctly refuses to auto-confirm when it isn't sure. This is the intended behavior.
+All 23 remaining misses are **combined payments** (36 in current set) flagged for human review or unmatched — the engine correctly refuses to auto-confirm when it isn't sure. This is the intended behavior.
 
 ### Files
 
 | File | Purpose |
 |---|---|
-| [`src/reconciliation_engine.ts`](./src/reconciliation_engine.ts) | Core engine — 5-pass matcher with scoring functions |
-| [`src/run_reconciliation.ts`](./src/run_reconciliation.ts) | Runner + evaluator — loads CSVs, runs engine, compares to ground truth |
-| [`output/reconciliation_tuning.json`](./output/reconciliation_tuning.json) | Full results from latest tuning run |
+| [`src/reconciliation_engine.ts`](file:///c:/Users/khani/Downloads/New%20folder/src/reconciliation_engine.ts) | Core engine — 5-pass matcher with scoring functions & TDS rules |
+| [`src/validate_and_tune.ts`](file:///c:/Users/khani/Downloads/New%20folder/src/validate_and_tune.ts) | Runner + evaluator — loads CSVs, runs engine, generates exception list |
+| [`output/reconciliation_tuning.json`](file:///c:/Users/khani/Downloads/New%20folder/output/reconciliation_tuning.json) | Full results from latest tuning run |
 
 ---
 
 ## Day 3 — Validate + Tune the Matcher
 
-*Not started yet.*
+*Completed alongside Day 2. The matcher was tuned to achieve a 0.0% false match rate and 100% precision on the tuning dataset.*
+
+---
+
+## Day 3.5 — TDS (Tax) Deduction Detection
+
+### What we built
+
+Upgraded the engine to handle Indian accounting rules by automatically detecting and reconciling payments where TDS (Tax Deducted at Source) was withheld. 
+
+### Key design decisions
+
+- **Data Generator:** Injected transactions using all 5 real Indian TDS rates: **1%** (Goods - 194Q), **2%** (Contractor - 194C), **5%** (Individual Pro Fees - 194J), **10%** (Company Pro Fees - 194J), and **20%** (No-PAN penalty).
+- **Matching Logic:** Added strict floating-point checks for `(1 - rate)` ratios (`0.99`, `0.98`, `0.95`, `0.90`, `0.80`) with 0.5% rounding tolerance, evaluated *before* generic rounding. Added guardrails requiring invoice ID or high confidence for non-exact matches.
+- **Results:** Correctly identified **11 out of 11 TDS deductions (100%)** in the tuning set with **0.0% false-match rate**!
 
 ---
 
