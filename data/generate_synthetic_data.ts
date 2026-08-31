@@ -153,6 +153,36 @@ const CLIENTS: Client[] = [
     { name: "Reddy Chemicals",        risk: "low",    avgDelay: -1, delayStd: 2  },
     { name: "Bose Engineering",       risk: "high",   avgDelay: 15, delayStd: 7  },
     { name: "Das Furniture",          risk: "medium", avgDelay: 9,  delayStd: 5  },
+    { name: "Reliance Manufacturing", risk: "medium", avgDelay: 11, delayStd: 4  },
+    { name: "Tata Steel Traders",     risk: "low",    avgDelay: -3, delayStd: 2  },
+    { name: "Adani Exports",          risk: "high",   avgDelay: 19, delayStd: 8  },
+    { name: "Birla Cements",          risk: "low",    avgDelay: 1,  delayStd: 2  },
+    { name: "Mahindra Auto",          risk: "medium", avgDelay: 8,  delayStd: 4  },
+    { name: "Infosys Consultants",    risk: "low",    avgDelay: 0,  delayStd: 1  },
+    { name: "Wipro IT Services",      risk: "low",    avgDelay: -1, delayStd: 2  },
+    { name: "HDFC FinServe",          risk: "low",    avgDelay: -2, delayStd: 1  },
+    { name: "ICICI Partners",         risk: "medium", avgDelay: 6,  delayStd: 3  },
+    { name: "Bajaj Finserv",          risk: "medium", avgDelay: 7,  delayStd: 5  },
+    { name: "L&T Construction",       risk: "high",   avgDelay: 21, delayStd: 9  },
+    { name: "Apollo Hospitals",       risk: "low",    avgDelay: 0,  delayStd: 2  },
+    { name: "Sun Pharma",             risk: "medium", avgDelay: 10, delayStd: 6  },
+    { name: "Dr Reddy's Labs",        risk: "high",   avgDelay: 16, delayStd: 7  },
+    { name: "Cipla Biotech",          risk: "low",    avgDelay: 2,  delayStd: 3  },
+    { name: "Hindalco Industries",    risk: "high",   avgDelay: 26, delayStd: 12 },
+    { name: "JSW Steel",              risk: "medium", avgDelay: 9,  delayStd: 4  },
+    { name: "Maruti Suzuki",          risk: "low",    avgDelay: 1,  delayStd: 2  },
+    { name: "Hero MotoCorp",          risk: "low",    avgDelay: -1, delayStd: 3  },
+    { name: "Eicher Motors",          risk: "medium", avgDelay: 12, delayStd: 5  },
+    { name: "Asian Paints",           risk: "low",    avgDelay: 0,  delayStd: 1  },
+    { name: "Britannia Industries",   risk: "low",    avgDelay: 3,  delayStd: 2  },
+    { name: "ITC Limited",            risk: "medium", avgDelay: 7,  delayStd: 3  },
+    { name: "Nestle India",           risk: "low",    avgDelay: -2, delayStd: 1  },
+    { name: "HUL Distributors",       risk: "low",    avgDelay: 1,  delayStd: 2  },
+    { name: "TCS Software",           risk: "low",    avgDelay: 0,  delayStd: 1  },
+    { name: "HCL Technologies",       risk: "medium", avgDelay: 5,  delayStd: 4  },
+    { name: "Tech Mahindra",          risk: "medium", avgDelay: 8,  delayStd: 3  },
+    { name: "UltraTech Cement",       risk: "high",   avgDelay: 17, delayStd: 6  },
+    { name: "ONGC Vendors",           risk: "high",   avgDelay: 28, delayStd: 10 }
 ];
 
 // Typo variants for fuzzy matching mess
@@ -167,6 +197,12 @@ const TYPO_MAP: Record<string, string[]> = {
     "Kapoor Industries":    ["Kapur Industries", "Kapoor Industris", "Kapoor Ind"],
     "Nair Exports":         ["Nair Expports", "Niar Exports", "Nair Export"],
     "Chopra Foods":         ["Chopra Fods", "Chpra Foods", "Chopra Food"],
+    "Reliance Manufacturing": ["Reliance Manufaturing", "Rliance Manufacturing"],
+    "Tata Steel Traders": ["Tata Steel Tradrs", "Tta Steel Traders"],
+    "Adani Exports": ["Adnani Exports", "Adani Expprts"],
+    "L&T Construction": ["L & T Construction", "L&T Constructions"],
+    "Maruti Suzuki": ["Muruti Suzuki", "Maruti Suzki"],
+    "Britannia Industries": ["Britania Industries", "Britannia Indstries"]
 };
 
 // ============================================================
@@ -553,7 +589,7 @@ function main() {
     console.log('Generating tuning dataset...');
     seedRng(42);
 
-    const tuningInvoices = generateInvoices(100, 1, new Date('2025-01-01'), 'INV');
+    const tuningInvoices = generateInvoices(250, 1, new Date('2025-01-01'), 'INV');
     const { transactions: tuningTxns, groundTruth: tuningGT } = generateBankTransactions(tuningInvoices);
 
     const invoiceColumns = ['invoice_id', 'client_name', 'amount', 'issue_date', 'due_date', 'payment_terms_days'];
@@ -594,7 +630,7 @@ function main() {
     console.log('\nGenerating test dataset...');
     seedRng(123);
 
-    const testInvoices = generateInvoices(50, 501, new Date('2025-04-01'), 'TST');
+    const testInvoices = generateInvoices(150, 501, new Date('2025-04-01'), 'TST');
     const { transactions: testTxns, groundTruth: testGT } = generateBankTransactions(testInvoices);
 
     fs.writeFileSync(path.join(testDir, 'invoices.csv'), toCsv(testInvoices, invoiceColumns));

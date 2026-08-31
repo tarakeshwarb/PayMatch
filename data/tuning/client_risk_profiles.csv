@@ -1,21 +1,51 @@
 client_name,true_risk,avg_delay_days,delay_std_days
-Iyer Technologies,low,0,2
-Singh Brothers,low,0,1
-Malhotra Auto Parts,medium,6,4
-Gupta & Sons Pvt Ltd,high,20,10
+L&T Construction,high,21,9
+Apollo Hospitals,low,0,2
+Chopra Foods,high,22,12
+Britannia Industries,low,3,2
 Kapoor Industries,low,-1,2
-Desai Agro,medium,5,4
+Mahindra Auto,medium,8,4
+HDFC FinServe,low,-2,1
+ITC Limited,medium,7,3
+Sun Pharma,medium,10,6
+Tech Mahindra,medium,8,3
+Verma Logistics,medium,7,5
+TCS Software,low,0,1
+JSW Steel,medium,9,4
+Tata Steel Traders,low,-3,2
+Eicher Motors,medium,12,5
+UltraTech Cement,high,17,6
+Das Furniture,medium,9,5
+Sharma Trading Co,low,1,3
+Cipla Biotech,low,2,3
+Dr Reddy's Labs,high,16,7
+Mehta Electronics,medium,8,5
+Bhatt & Associates,high,18,8
+Maruti Suzuki,low,1,2
+Hero MotoCorp,low,-1,3
 Reddy Chemicals,low,-1,2
+Malhotra Auto Parts,medium,6,4
 Nair Exports,medium,12,6
+Hindalco Industries,high,26,12
+Adani Exports,high,19,8
+Patel Construction,high,25,15
+Nestle India,low,-2,1
 Bose Engineering,high,15,7
 Joshi Packaging,low,2,3
-Verma Logistics,medium,7,5
-Chopra Foods,high,22,12
-Das Furniture,medium,9,5
-Patel Construction,high,25,15
-Priya Enterprises,low,0,2
-Bhatt & Associates,high,18,8
+Gupta & Sons Pvt Ltd,high,20,10
 Rajesh Textiles,low,-2,3
+Iyer Technologies,low,0,2
+Infosys Consultants,low,0,1
+Priya Enterprises,low,0,2
+HCL Technologies,medium,5,4
+Birla Cements,low,1,2
+ONGC Vendors,high,28,10
+HUL Distributors,low,1,2
+Reliance Manufacturing,medium,11,4
+Bajaj Finserv,medium,7,5
+Wipro IT Services,low,-1,2
 Anand Pharma,medium,10,4
-Mehta Electronics,medium,8,5
-Sharma Trading Co,low,1,3
+Singh Brothers,low,0,1
+Asian Paints,low,0,1
+Desai Agro,medium,5,4
+ICICI Partners,medium,6,3

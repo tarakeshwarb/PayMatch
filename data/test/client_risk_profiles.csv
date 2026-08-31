@@ -1,19 +1,49 @@
 client_name,true_risk,avg_delay_days,delay_std_days
-Chopra Foods,high,22,12
-Reddy Chemicals,low,-1,2
-Gupta & Sons Pvt Ltd,high,20,10
-Rajesh Textiles,low,-2,3
+Eicher Motors,medium,12,5
+Nestle India,low,-2,1
+Kapoor Industries,low,-1,2
 Bhatt & Associates,high,18,8
-Das Furniture,medium,9,5
-Singh Brothers,low,0,1
+Wipro IT Services,low,-1,2
+Tech Mahindra,medium,8,3
 Malhotra Auto Parts,medium,6,4
-Sharma Trading Co,low,1,3
-Patel Construction,high,25,15
+Reddy Chemicals,low,-1,2
+Chopra Foods,high,22,12
+Asian Paints,low,0,1
+Gupta & Sons Pvt Ltd,high,20,10
+Infosys Consultants,low,0,1
 Bose Engineering,high,15,7
-Mehta Electronics,medium,8,5
-Priya Enterprises,low,0,2
-Desai Agro,medium,5,4
-Nair Exports,medium,12,6
-Anand Pharma,medium,10,4
+HDFC FinServe,low,-2,1
 Verma Logistics,medium,7,5
+Desai Agro,medium,5,4
+Anand Pharma,medium,10,4
+Sharma Trading Co,low,1,3
+Rajesh Textiles,low,-2,3
+Cipla Biotech,low,2,3
+Joshi Packaging,low,2,3
+Reliance Manufacturing,medium,11,4
+Apollo Hospitals,low,0,2
+Adani Exports,high,19,8
+Britannia Industries,low,3,2
+ITC Limited,medium,7,3
+Maruti Suzuki,low,1,2
+HCL Technologies,medium,5,4
+UltraTech Cement,high,17,6
+Nair Exports,medium,12,6
+Priya Enterprises,low,0,2
+Sun Pharma,medium,10,6
+Tata Steel Traders,low,-3,2
+Hindalco Industries,high,26,12
+Singh Brothers,low,0,1
+JSW Steel,medium,9,4
+HUL Distributors,low,1,2
+Hero MotoCorp,low,-1,3
+Birla Cements,low,1,2
+TCS Software,low,0,1
+Mahindra Auto,medium,8,4
+L&T Construction,high,21,9
+Dr Reddy's Labs,high,16,7
+Patel Construction,high,25,15
+Das Furniture,medium,9,5
+ONGC Vendors,high,28,10
 Iyer Technologies,low,0,2
+Bajaj Finserv,medium,7,5

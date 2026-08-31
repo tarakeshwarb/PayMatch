@@ -4,16 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dashboard": "npx tsx src/dashboard_server.ts",
+    "pipeline": "npx tsx src/run_reconciliation.ts tuning && npx tsx src/run_risk_model.ts tuning && npx tsx src/risk_priority_engine.ts tuning && npx tsx src/chaser_engine.ts tuning"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "cors": "^2.8.6",
     "csv-parse": "^7.0.2",
     "csv-stringify": "^6.8.3",
+    "express": "^5.2.1",
     "fuzzball": "^2.2.6",
+    "multer": "^2.3.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

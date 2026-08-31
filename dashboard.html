@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PayMatch — Invoice Reconciliation Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset & Base ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f8fafc;
+  --surface:    #ffffff;
+  --surface2:   #f1f5f9;
+  --border:     #e2e8f0;
+  --text:       #1e293b;
+  --muted:      #64748b;
+  --accent:     #4f46e5;
+  --accent-light: #eef2ff;
+  --accent-border: #c7d2fe;
+  --green:      #10b981;
+  --green-dim:  #ecfdf5;
+  --green-bdr:  #a7f3d0;
+  --yellow:     #f59e0b;
+  --yellow-dim: #fffbeb;
+  --yellow-bdr: #fde68a;
+  --red:        #f43f5e;
+  --red-dim:    #fff1f2;
+  --red-bdr:    #fecdd3;
+  --orange:     #f97316;
+  --orange-dim: #fff7ed;
+  --purple:     #8b5cf6;
+  --purple-dim: #f3e8ff;
+  --r: 8px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Top bar ────────────────────────────────────────── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.logo .icon { color: var(--accent); font-size: 22px; }
+.logo span { font-weight: 700; font-size: 17px; color: var(--text); letter-spacing: -0.5px; }
+
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+.upload-btn {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+  font-family: inherit;
+}
+.upload-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar {
+  position: fixed; top: 56px; left: 0; bottom: 0;
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  z-index: 90;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.nav-tab {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.nav-tab:hover { background: var(--surface2); color: var(--text); }
+.nav-tab.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+  border: 1px solid var(--accent-border);
+}
+.nav-tab .material-symbols-outlined { font-size: 20px; }
+
+/* ── Main content ───────────────────────────────────── */
+.main { padding: 24px; padding-top: 80px; margin-left: 220px; max-width: 1500px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Page header ────────────────────────────────────── */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
+.page-header p { font-size: 14px; color: var(--muted); }
+
+/* ── Metric cards (bento) ───────────────────────────── */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.metric-card {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 96px;
+}
+.metric-label {
+  font-size: 11px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.5px; font-weight: 600;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.metric-label .material-symbols-outlined { font-size: 18px; }
+.metric-value { font-size: 26px; font-weight: 700; margin-top: 8px; }
+
+.metric-card.indigo { background: var(--accent-light); border-color: var(--accent-border); }
+.metric-card.indigo .metric-label { color: var(--accent); }
+.metric-card.indigo .metric-value { color: var(--accent); }
+
+.metric-card.rose { background: var(--red-dim); border-color: var(--red-bdr); }
+.metric-card.rose .metric-label { color: var(--red); }
+.metric-card.rose .metric-value { color: var(--red); }
+
+.metric-card.amber { background: var(--yellow-dim); border-color: var(--yellow-bdr); }
+.metric-card.amber .metric-label { color: #b45309; }
+.metric-card.amber .metric-value { color: #b45309; }
+
+.metric-card.wide { grid-column: span 2; }
+.metric-card.wide .metric-value { font-size: 30px; }
+
+/* ── Chart card ─────────────────────────────────────── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  min-height: 300px;
+}
+.chart-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.chart-header h2 { font-size: 15px; font-weight: 600; }
+.chart-pills { display: flex; gap: 4px; background: var(--surface2); padding: 3px; border-radius: 6px; }
+.chart-pill {
+  font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 4px;
+  border: none; background: none; color: var(--muted); cursor: pointer; font-family: inherit;
+}
+.chart-pill.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+
+.chart-area { position: relative; width: 100%; height: 200px; }
+.chart-area svg { width: 100%; height: 100%; }
+.chart-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+/* ── Section headers ────────────────────────────────── */
+.section-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.section-title { font-size: 18px; font-weight: 700; }
+.section-count {
+  background: var(--surface2); color: var(--muted);
+  border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600;
+}
+.section-filters { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Filters ────────────────────────────────────────── */
+.filter-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--muted); border-radius: 20px; padding: 5px 14px;
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+  font-weight: 500; font-family: inherit;
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--text); }
+.filter-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+/* ── Tables ─────────────────────────────────────────── */
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: var(--surface2); color: var(--muted);
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 12px 16px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+thead th.sortable { cursor: pointer; user-select: none; }
+thead th.sortable:hover { color: var(--text); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+td { padding: 12px 16px; vertical-align: middle; font-size: 14px; }
+td.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); }
+td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-size: 13px; font-weight: 500; }
+
+/* ── Badges ─────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge.matched, .badge.low { background: var(--green-dim); color: var(--green); }
+.badge.partial, .badge.medium, .badge.firm_follow, .badge.standard { background: var(--yellow-dim); color: var(--yellow); }
+.badge.low_confidence, .badge.formal_notice { background: var(--orange-dim); color: var(--orange); }
+.badge.unmatched, .badge.high, .badge.critical, .badge.final_escalation { background: var(--red-dim); color: var(--red); }
+.badge.polite_reminder { background: var(--green-dim); color: var(--green); }
+.badge.insufficient { background: var(--surface2); color: var(--muted); }
+
+/* ── Confidence / risk bars ─────────────────────────── */
+.conf-bar-wrap { margin-top: 12px; }
+.conf-bar-bg { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+.conf-bar { border-radius: 4px; height: 100%; transition: width 0.4s; }
+.risk-bar-wrap { width: 120px; }
+.risk-bar-bg { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+.risk-bar { border-radius: 4px; height: 100%; transition: width 0.5s; }
+
+/* ── Expand row (low-confidence review) ─────────────── */
+.expand-row td { background: var(--surface2); padding: 0; border-bottom: 1px solid var(--border); }
+.expand-inner {
+  padding: 16px 20px; display: flex; gap: 20px;
+  align-items: flex-start; flex-wrap: wrap; border-left: 3px solid var(--orange);
+}
+.candidate-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px; flex: 1; min-width: 280px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.candidate-card h4 { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+.candidate-card p { font-size: 13px; margin-bottom: 4px; }
+.action-btns { display: flex; gap: 8px; margin-top: 16px; }
+.btn-confirm {
+  background: var(--green-dim); color: var(--green); border: 1px solid var(--green);
+  border-radius: var(--r); padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; font-family: inherit;
+}
+.btn-confirm:hover { background: var(--green); color: #fff; }
+.btn-reject {
+  background: var(--red-dim); color: var(--red); border: 1px solid var(--red);
+  border-radius: var(--r); padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; font-family: inherit;
+}
+.btn-reject:hover { background: var(--red); color: #fff; }
+
+/* ── Chaser cards ───────────────────────────────────── */
+.chaser-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 16px; }
+.chaser-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; transition: border-color 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.chaser-card:hover { border-color: var(--accent); }
+.chaser-card.broken-promise { border-color: var(--red); box-shadow: 0 0 0 1px var(--red), 0 0 12px rgba(244,63,94,0.1); }
+.chaser-card.paused { opacity: 0.65; }
+.chaser-card.sent { opacity: 0.4; }
+
+.card-header {
+  padding: 12px 16px; background: var(--surface2);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.card-client { font-weight: 700; font-size: 14px; flex: 1; }
+.card-amount { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; }
+.card-body { padding: 12px 16px; }
+.card-meta { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-meta-item { font-size: 12px; color: var(--muted); }
+.card-meta-item strong { color: var(--text); }
+
+.msg-preview {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px; font-size: 13px; color: var(--text);
+  white-space: pre-wrap; max-height: 110px; overflow: hidden;
+  position: relative; cursor: pointer; transition: max-height 0.3s;
+}
+.msg-preview.expanded { max-height: 400px; }
+
+.card-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+.btn-copy {
+  background: var(--surface); color: var(--muted); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; font-family: inherit;
+}
+.btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sent {
+  background: var(--green-dim); color: var(--green); border: 1px solid var(--green);
+  border-radius: var(--r); padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; font-family: inherit;
+}
+.btn-sent:hover { background: var(--green); color: #fff; }
+.btn-sent.done { opacity: 0.5; cursor: default; }
+
+.promise-form { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.promise-form input[type="date"] {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-family: inherit;
+}
+.btn-promise {
+  background: var(--purple-dim); color: var(--purple); border: 1px solid var(--purple);
+  border-radius: var(--r); padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit;
+}
+.broken-label {
+  background: var(--red-dim); color: var(--red); border-radius: 4px;
+  padding: 2px 8px; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* ── Upload modal ───────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,0.5); z-index: 200;
+  align-items: center; justify-content: center; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 32px; width: 480px; max-width: 95vw;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+.modal h2 { font-size: 20px; margin-bottom: 8px; font-weight: 700; }
+.modal p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.upload-row { margin-bottom: 16px; }
+.upload-row label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.upload-row input[type="file"] {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 10px; width: 100%; font-size: 13px; font-family: inherit;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+.btn-cancel {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: var(--r); padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit;
+}
+.btn-run {
+  background: var(--accent); color: white; border: none;
+  border-radius: var(--r); padding: 8px 20px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;
+}
+.btn-run:disabled { opacity: 0.5; cursor: default; }
+.run-log {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--green); max-height: 160px; overflow-y: auto;
+  margin-top: 16px; display: none;
+}
+
+/* ── Toast ──────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--text); border-radius: var(--r);
+  padding: 12px 20px; font-size: 13px; font-weight: 500; color: white;
+  opacity: 0; transform: translateY(8px); transition: all 0.3s;
+  z-index: 300; pointer-events: none;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Empty state ────────────────────────────────────── */
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty .icon { font-size: 40px; margin-bottom: 12px; }
+.empty p { font-size: 14px; font-weight: 500; }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .metric-grid { grid-template-columns: repeat(3, 1fr); }
+  .metric-card.wide { grid-column: span 1; }
+  .metric-card.wide .metric-value { font-size: 24px; }
+  .mobile-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; align-items: center;
+    height: 56px; z-index: 100; padding: 0 8px;
+  }
+  .mobile-nav .nav-tab {
+    flex-direction: column; gap: 2px; font-size: 10px; padding: 6px 8px;
+  }
+  .main { padding-bottom: 80px; }
+}
+@media (min-width: 1025px) {
+  .mobile-nav { display: none; }
+}
+@media (max-width: 640px) {
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .chaser-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ──────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="logo">
+    <span class="material-symbols-outlined icon" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+    <span>PayMatch</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="upload-btn" id="openUploadBtn">
+      <span class="material-symbols-outlined" style="font-size:16px;">upload</span> Upload New Data
+    </button>
+  </div>
+</div>
+
+<!-- ── Sidebar ──────────────────────────────────────────── -->
+<nav class="sidebar">
+  <button class="nav-tab active" data-tab="summary">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">dashboard</span> Summary
+  </button>
+  <button class="nav-tab" data-tab="reconciliation">
+    <span class="material-symbols-outlined">sync_alt</span> Reconciliation
+  </button>
+  <button class="nav-tab" data-tab="risk">
+    <span class="material-symbols-outlined">priority_high</span> Risk Tier
+  </button>
+  <button class="nav-tab" data-tab="chaser">
+    <span class="material-symbols-outlined">forward_to_inbox</span> Chaser Queue
+  </button>
+</nav>
+
+<!-- ── Mobile bottom nav ───────────────────────────────── -->
+<nav class="mobile-nav">
+  <button class="nav-tab active" data-tab="summary">
+    <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">dashboard</span> Summary
+  </button>
+  <button class="nav-tab" data-tab="reconciliation">
+    <span class="material-symbols-outlined" style="font-size:20px;">sync_alt</span> Recon
+  </button>
+  <button class="nav-tab" data-tab="risk">
+    <span class="material-symbols-outlined" style="font-size:20px;">priority_high</span> Risk
+  </button>
+  <button class="nav-tab" data-tab="chaser">
+    <span class="material-symbols-outlined" style="font-size:20px;">forward_to_inbox</span> Queue
+  </button>
+</nav>
+
+<!-- ── Main ─────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- ═══ Tab: Summary ═══ -->
+  <div class="tab-panel active" id="panel-summary">
+    <div class="page-header">
+      <h1>Financial Summary</h1>
+      <p>Real-time overview of current matching status and outstanding risks.</p>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Invoices <span class="material-symbols-outlined">receipt_long</span></div>
+        <div class="metric-value" id="m-total">—</div>
+      </div>
+      <div class="metric-card indigo">
+        <div class="metric-label">Auto-Match Rate <span class="material-symbols-outlined">trending_up</span></div>
+        <div class="metric-value" id="m-rate">—</div>
+      </div>
+      <div class="metric-card wide">
+        <div class="metric-label">Total Outstanding <span class="material-symbols-outlined">account_balance</span></div>
+        <div class="metric-value" id="m-outstanding">—</div>
+      </div>
+      <div class="metric-card rose wide">
+        <div class="metric-label">At-Risk Amount <span class="material-symbols-outlined">warning</span></div>
+        <div class="metric-value" id="m-atrisk">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Chasers Queued <span class="material-symbols-outlined">mail</span></div>
+        <div class="metric-value" id="m-chaser">—</div>
+      </div>
+      <div class="metric-card amber">
+        <div class="metric-label">Broken Promises <span class="material-symbols-outlined">report_problem</span></div>
+        <div class="metric-value" id="m-broken">—</div>
+      </div>
+    </div>
+
+    <!-- Summary detail cards -->
+    <div id="summary-detail" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px;"></div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Match Rate Trends</h2>
+        <div class="chart-pills">
+          <button class="chart-pill">1W</button>
+          <button class="chart-pill active">1M</button>
+          <button class="chart-pill">3M</button>
+        </div>
+      </div>
+      <div class="chart-area">
+        <svg viewBox="0 0 1000 240" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.12"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,240 L0,200 C100,180 200,210 300,150 C400,90 500,170 600,100 C700,30 800,70 900,40 L1000,15 L1000,240 Z" fill="url(#lineFill)"/>
+          <path d="M0,200 C100,180 200,210 300,150 C400,90 500,170 600,100 C700,30 800,70 900,40 L1000,15" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+          <circle cx="300" cy="150" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
+          <circle cx="600" cy="100" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
+          <circle cx="900" cy="40" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="chart-labels"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Reconciliation ═══ -->
+  <div class="tab-panel" id="panel-reconciliation">
+    <div class="section-header">
+      <span class="section-title">Reconciliation Results</span>
+      <span class="section-count" id="recon-count">0 invoices</span>
+      <div class="section-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterRecon(this)">All</button>
+        <button class="filter-btn" data-filter="matched" onclick="filterRecon(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">check_circle</span> Matched</button>
+        <button class="filter-btn" data-filter="partial" onclick="filterRecon(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">bolt</span> Partial</button>
+        <button class="filter-btn" data-filter="low_confidence" onclick="filterRecon(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">report_problem</span> Review</button>
+        <button class="filter-btn" data-filter="unmatched" onclick="filterRecon(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">cancel</span> Unmatched</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Invoice</th><th>Client</th><th>Status</th>
+            <th class="sortable" onclick="sortRecon('invoice_amount')">Amount ↕</th>
+            <th class="sortable" onclick="sortRecon('paid_amount')">Paid ↕</th>
+            <th>Remaining</th><th>Match Type</th><th>Confidence</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="recon-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Risk Tier ═══ -->
+  <div class="tab-panel" id="panel-risk">
+    <div class="section-header">
+      <span class="section-title">Client Risk Tiers</span>
+      <span class="section-count" id="risk-count">0 clients</span>
+      <div class="section-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterRisk(this)">All</button>
+        <button class="filter-btn" data-filter="High" onclick="filterRisk(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; color:var(--red);">error</span> High</button>
+        <button class="filter-btn" data-filter="Medium" onclick="filterRisk(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; color:var(--yellow);">warning</span> Medium</button>
+        <button class="filter-btn" data-filter="Low" onclick="filterRisk(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; color:var(--green);">check_circle</span> Low</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th><th>Risk Tier</th>
+            <th class="sortable" onclick="sortRisk('avg_days_late')">Avg Days Late ↕</th>
+            <th class="sortable" onclick="sortRisk('late_frequency_pct')">Late Freq ↕</th>
+            <th class="sortable" onclick="sortRisk('expected_amount_at_risk')">Amount at Risk ↕</th>
+            <th>Risk Bar</th><th>Contributing Factors</th>
+          </tr>
+        </thead>
+        <tbody id="risk-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Chaser Queue ═══ -->
+  <div class="tab-panel" id="panel-chaser">
+    <div class="section-header">
+      <span class="section-title">Chaser Message Queue</span>
+      <span class="section-count" id="chaser-count">0 messages</span>
+      <div class="section-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterChaser(this)">All</button>
+        <button class="filter-btn" data-filter="DRAFTED" onclick="filterChaser(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">edit</span> Drafted</button>
+        <button class="filter-btn" data-filter="PAUSED" onclick="filterChaser(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">pause_circle</span> Paused</button>
+        <button class="filter-btn" data-filter="broken" onclick="filterChaser(this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">error</span> Broken Promise</button>
+      </div>
+    </div>
+    <div class="chaser-grid" id="chaser-grid"></div>
+  </div>
+
+</main>
+
+<!-- ── Upload modal ────────────────────────────────────── -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <h2>Upload New Data</h2>
+    <p>Upload your invoice register and bank statement to run the full pipeline.</p>
+    <div class="upload-row">
+      <label>Invoice Register (CSV)</label>
+      <input type="file" id="file-invoices" accept=".csv">
+    </div>
+    <div class="upload-row">
+      <label>Bank Statement (CSV)</label>
+      <input type="file" id="file-bank" accept=".csv">
+    </div>
+    <div class="run-log" id="run-log"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-run" id="btn-run-pipeline" onclick="runPipeline()">▶ Run Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<script>
+// ═════════════════════════════════════════════════════════
+// State
+// ═════════════════════════════════════════════════════════
+let DATA = null;
+let reconFilter = 'all';
+let riskFilter = 'all';
+let chaserFilter = 'all';
+let reconSort = { key: null, dir: 1 };
+let riskSort = { key: 'expected_amount_at_risk', dir: -1 };
+
+// ═════════════════════════════════════════════════════════
+// Boot
+// ═════════════════════════════════════════════════════════
+async function boot() {
+  try {
+    const r = await fetch('/api/results');
+    DATA = await r.json();
+    render();
+  } catch(e) {
+    document.getElementById('panel-summary').innerHTML =
+      `<div class="empty"><div class="icon">⚠️</div><p>Could not connect to dashboard server.<br>Run: <code>npm run dashboard</code></p></div>`;
+  }
+}
+boot();
+
+// ═════════════════════════════════════════════════════════
+// Tab switching
+// ═════════════════════════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    // Activate all nav-tabs with the same data-tab (sidebar + mobile)
+    document.querySelectorAll(`.nav-tab[data-tab="${tab}"]`).forEach(b => b.classList.add('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+  });
+});
+
+// ═════════════════════════════════════════════════════════
+// Render all
+// ═════════════════════════════════════════════════════════
+function render() {
+  if (!DATA) return;
+  renderSummary();
+  renderRecon();
+  renderRisk();
+  renderChaser();
+}
+
+// ═════════════════════════════════════════════════════════
+// Summary
+// ═════════════════════════════════════════════════════════
+function renderSummary() {
+  const s = DATA.summary;
+  if (!s) return;
+
+  document.getElementById('m-total').textContent = s.total_invoices;
+  document.getElementById('m-rate').textContent = s.match_rate_pct + '%';
+  document.getElementById('m-outstanding').textContent = formatINR(s.total_outstanding);
+  document.getElementById('m-atrisk').textContent = formatINR(s.total_at_risk);
+  document.getElementById('m-chaser').textContent = s.chaser_drafted;
+  document.getElementById('m-broken').textContent = s.broken_promises;
+
+  // Detail cards below
+  const cards = [
+    { icon: '<span class="material-symbols-outlined">receipt_long</span>', title: 'Total Invoices', value: s.total_invoices, sub: 'in this dataset', color: 'accent' },
+    { icon: '<span class="material-symbols-outlined">check_circle</span>', title: 'Auto-Matched', value: s.matched + s.partial, sub: `${s.matched} exact · ${s.partial} partial`, color: 'green' },
+    { icon: '<span class="material-symbols-outlined">report_problem</span>', title: 'Needs Review', value: s.low_confidence, sub: 'low-confidence — human confirm needed', color: 'yellow' },
+    { icon: '<span class="material-symbols-outlined">cancel</span>', title: 'Unmatched', value: s.unmatched, sub: 'no payment found — genuinely open', color: 'red' },
+    { icon: '<span class="material-symbols-outlined">account_balance</span>', title: 'Total Outstanding', value: formatINR(s.total_outstanding), sub: 'across all clients', color: 'accent' },
+    { icon: '<span class="material-symbols-outlined">track_changes</span>', title: 'Expected at Risk', value: formatINR(s.total_at_risk), sub: 'probability × outstanding', color: 'yellow' },
+    { icon: '<span class="material-symbols-outlined">mail</span>', title: 'Chasers Queued', value: s.chaser_drafted, sub: `${s.chaser_paused} paused on promise`, color: 'accent' },
+    { icon: '<span class="material-symbols-outlined">error</span>', title: 'Broken Promises', value: s.broken_promises, sub: 'clients who missed commit date', color: s.broken_promises > 0 ? 'red' : 'green' },
+  ];
+
+  document.getElementById('summary-detail').innerHTML = cards.map(c => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+      <div style="font-size:28px;margin-bottom:8px;">${c.icon}</div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-weight:600;">${c.title}</div>
+      <div style="font-size:28px;font-weight:700;color:var(--${c.color});margin-bottom:4px;">${c.value}</div>
+      <div style="font-size:12px;color:var(--muted);">${c.sub}</div>
+    </div>
+  `).join('');
+}
+
+// ═════════════════════════════════════════════════════════
+// Reconciliation
+// ═════════════════════════════════════════════════════════
+function renderRecon() {
+  const results = DATA?.recon?.results ?? [];
+  let rows = reconFilter === 'all' ? results : results.filter(r => r.status === reconFilter);
+
+  if (reconSort.key) {
+    rows = [...rows].sort((a, b) => (a[reconSort.key] - b[reconSort.key]) * reconSort.dir);
+  }
+
+  document.getElementById('recon-count').textContent = `${rows.length} of ${results.length} invoices`;
+
+  const tbody = document.getElementById('recon-tbody');
+  tbody.innerHTML = rows.map((r, i) => {
+    const expandId = `expand-${i}`;
+    const hasCandidate = r.status === 'low_confidence' && r.candidate_transactions?.length > 0;
+    const conf = r.confidence ? (r.confidence * 100).toFixed(0) + '%' : '—';
+
+    return `
+      <tr style="${hasCandidate?'cursor:pointer':''}" ${hasCandidate ? `onclick="toggleExpand('${expandId}')"` : ''}>
+        <td class="mono">${r.invoice_id}</td>
+        <td>${r.client_name}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td class="amount">${formatINR(r.invoice_amount)}</td>
+        <td class="amount">${r.paid_amount > 0 ? formatINR(r.paid_amount) : '—'}</td>
+        <td class="amount" style="color:${r.remaining_amount > 0 ? 'var(--red)' : 'var(--muted)'}">${r.remaining_amount > 0 ? formatINR(r.remaining_amount) : '—'}</td>
+        <td><span style="font-size:11px;color:var(--muted)">${r.match_type || '—'}</span></td>
+        <td>
+          ${r.confidence ? `
+            <div class="conf-bar-bg" style="width:80px">
+              <div class="conf-bar" style="width:${r.confidence*100}%;background:${r.confidence>0.7?'var(--green)':r.confidence>0.4?'var(--yellow)':'var(--red)'}"></div>
+            </div>
+          ` : '—'}
+        </td>
+        <td>${hasCandidate ? '<span style="color:var(--accent);font-size:11px">▼ Review</span>' : ''}</td>
+      </tr>
+      ${hasCandidate ? `<tr class="expand-row" id="${expandId}" style="display:none">
+        <td colspan="9">
+          <div class="expand-inner">
+            ${r.candidate_transactions.slice(0,2).map(c => `
+              <div class="candidate-card">
+                <h4>Candidate Match — ${c.transaction_id}</h4>
+                <p><strong>${formatINR(c.amount)}</strong> on ${c.date}</p>
+                <p style="color:var(--muted);font-size:12px">${c.narration}</p>
+                <p style="font-size:11px;color:var(--muted);margin-top:6px">${c.note || ''}</p>
+                <div class="conf-bar-wrap">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px">
+                    <span>Confidence</span><span>${(c.confidence*100).toFixed(0)}%</span>
+                  </div>
+                  <div class="conf-bar-bg"><div class="conf-bar" style="width:${c.confidence*100}%;background:${c.confidence>0.7?'var(--green)':c.confidence>0.4?'var(--yellow)':'var(--red)'}"></div></div>
+                </div>
+                <div class="action-btns">
+                  <button class="btn-confirm" onclick="confirmMatch('${r.invoice_id}','${c.transaction_id}',event)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">check_circle</span>Confirm Match</button>
+                  <button class="btn-reject" onclick="rejectMatch('${r.invoice_id}',event)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">cancel</span>Reject</button>
+                </div>
+              </div>
+            `).join('')}
+            <div style="flex:1;min-width:200px;">
+              <p style="font-size:12px;color:var(--muted)">${r.notes?.join('<br>') || ''}</p>
+            </div>
+          </div>
+        </td>
+      </tr>` : ''}
+    `;
+  }).join('');
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="icon">🔍</div><p>No invoices matching this filter.</p></div></td></tr>`;
+  }
+}
+
+function toggleExpand(id) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function filterRecon(btn) {
+  btn.closest('.section-filters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  reconFilter = btn.dataset.filter;
+  renderRecon();
+}
+
+function sortRecon(key) {
+  if (reconSort.key === key) reconSort.dir *= -1;
+  else { reconSort.key = key; reconSort.dir = -1; }
+  renderRecon();
+}
+
+async function confirmMatch(invoiceId, txnId, e) {
+  e.stopPropagation();
+  toast(`✅ Match confirmed: ${invoiceId} → ${txnId}`);
+  e.target.closest('.candidate-card').style.borderColor = 'var(--green)';
+  e.target.textContent = '✅ Confirmed';
+  e.target.disabled = true;
+}
+
+async function rejectMatch(invoiceId, e) {
+  e.stopPropagation();
+  toast(`❌ Match rejected for ${invoiceId}`);
+  e.target.closest('.candidate-card').style.borderColor = 'var(--red)';
+}
+
+// ═════════════════════════════════════════════════════════
+// Risk Tier
+// ═════════════════════════════════════════════════════════
+function renderRisk() {
+  const riskScores = DATA?.riskScores ?? [];
+  const priorityMap = {};
+  (DATA?.priority?.queue ?? []).forEach(c => { priorityMap[c.client_name] = c; });
+
+  let rows = riskFilter === 'all' ? riskScores : riskScores.filter(r => r.risk_tier === riskFilter);
+
+  rows = rows.map(r => ({
+    ...r,
+    expected_amount_at_risk: priorityMap[r.client_name]?.expected_amount_at_risk ?? 0,
+    current_outstanding: priorityMap[r.client_name]?.current_outstanding ?? 0,
+  }));
+
+  if (riskSort.key) {
+    rows = [...rows].sort((a, b) => {
+      const av = parseFloat(a[riskSort.key]) || 0;
+      const bv = parseFloat(b[riskSort.key]) || 0;
+      return (bv - av) * riskSort.dir;
+    });
+  }
+
+  const maxRisk = Math.max(...rows.map(r => r.expected_amount_at_risk), 1);
+  document.getElementById('risk-count').textContent = `${rows.length} clients`;
+
+  const tbody = document.getElementById('risk-tbody');
+  tbody.innerHTML = rows.map(r => {
+    const barW = maxRisk > 0 ? Math.round(r.expected_amount_at_risk / maxRisk * 100) : 0;
+    const barColor = r.risk_tier === 'High' ? 'var(--red)' : r.risk_tier === 'Medium' ? 'var(--yellow)' : 'var(--green)';
+    return `
+      <tr>
+        <td style="font-weight:600">${r.client_name}</td>
+        <td>${tierBadge(r.risk_tier)}</td>
+        <td class="amount">${parseFloat(r.avg_days_late).toFixed(1)}d</td>
+        <td class="amount">${parseFloat(r.late_frequency_pct).toFixed(0)}%</td>
+        <td class="amount" style="color:${r.expected_amount_at_risk > 0 ? 'var(--accent)' : 'var(--muted)'}">
+          ${r.expected_amount_at_risk > 0 ? formatINR(r.expected_amount_at_risk) : '—'}
+        </td>
+        <td>
+          <div class="risk-bar-wrap">
+            <div class="risk-bar-bg"><div class="risk-bar" style="width:${barW}%;background:${barColor}"></div></div>
+          </div>
+        </td>
+        <td style="font-size:12px;color:var(--muted);max-width:300px">${r.contributing_factors}</td>
+      </tr>
+    `;
+  }).join('');
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="icon">📊</div><p>No clients in this tier.</p></div></td></tr>`;
+  }
+}
+
+function filterRisk(btn) {
+  btn.closest('.section-filters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  riskFilter = btn.dataset.filter;
+  renderRisk();
+}
+
+function sortRisk(key) {
+  if (riskSort.key === key) riskSort.dir *= -1;
+  else { riskSort.key = key; riskSort.dir = -1; }
+  renderRisk();
+}
+
+// ═════════════════════════════════════════════════════════
+// Chaser queue
+// ═════════════════════════════════════════════════════════
+function renderChaser() {
+  let items = DATA?.chaser ?? [];
+
+  if (chaserFilter === 'DRAFTED') items = items.filter(c => c.status === 'DRAFTED');
+  else if (chaserFilter === 'PAUSED') items = items.filter(c => c.status === 'PAUSED');
+  else if (chaserFilter === 'broken') items = items.filter(c => c.broken_promise);
+
+  document.getElementById('chaser-count').textContent =
+    `${items.length} of ${DATA?.chaser?.length ?? 0} messages`;
+
+  const grid = document.getElementById('chaser-grid');
+  if (items.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">📭</div><p>No messages in this filter.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map((c, i) => {
+    const msgId = `msg-${i}`;
+    return `
+      <div class="chaser-card ${c.broken_promise ? 'broken-promise' : ''} ${c.status === 'PAUSED' ? 'paused' : ''} ${c.sent ? 'sent' : ''}" id="card-${c.invoice_id}">
+        <div class="card-header">
+          <span class="card-client">${c.client_name}</span>
+          <span class="card-amount">${formatINR(c.amount)}</span>
+          ${c.broken_promise ? '<span class="broken-label"><span class="material-symbols-outlined" style="font-size:14px;">error</span> Broken Promise</span>' : ''}
+          ${c.status === 'PAUSED' ? '<span class="badge matched"><span class="material-symbols-outlined" style="font-size:14px;">pause_circle</span> Paused</span>' : ''}
+          ${c.sent ? '<span class="badge matched"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> Sent</span>' : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <div class="card-meta-item"><strong>${c.invoice_id}</strong></div>
+            <div class="card-meta-item"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">schedule</span> <strong>${c.days_overdue}</strong> days overdue</div>
+            <div class="card-meta-item">${bandBadge(c.risk_band)}</div>
+            <div class="card-meta-item">${tierBadgeChaser(c.tier)}</div>
+          </div>
+          ${c.status === 'PAUSED' && c.reason
+            ? `<div style="background:var(--green-dim);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;">pause_circle</span> ${c.reason}</div>`
+            : ''}
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600">${c.message_subject}</div>
+          <div class="msg-preview" id="${msgId}" onclick="toggleMsg('${msgId}')">${escapeHtml(c.message_body)}</div>
+          <div class="card-actions">
+            <button class="btn-copy" onclick="copyMsg('${msgId}', this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">content_copy</span>Copy</button>
+            ${!c.sent
+              ? `<button class="btn-sent" onclick="markSent('${c.invoice_id}', this)"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">send</span>Mark Sent</button>`
+              : `<button class="btn-sent done" disabled><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">check_circle</span>Sent</button>`
+            }
+            <div class="promise-form">
+              <input type="date" id="promise-${c.invoice_id}" value="${tomorrowStr()}">
+              <button class="btn-promise" onclick="savePromise('${c.invoice_id}')"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom; margin-right:4px;">calendar_clock</span>Promise</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterChaser(btn) {
+  btn.closest('.section-filters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  chaserFilter = btn.dataset.filter;
+  renderChaser();
+}
+
+function toggleMsg(id) {
+  document.getElementById(id)?.classList.toggle('expanded');
+}
+
+async function copyMsg(msgId, btn) {
+  const text = document.getElementById(msgId)?.textContent || '';
+  await navigator.clipboard.writeText(text.trim());
+  const orig = btn.textContent;
+  btn.textContent = '✅ Copied!';
+  setTimeout(() => btn.textContent = orig, 1800);
+}
+
+async function markSent(invoiceId, btn) {
+  try {
+    await fetch('/api/mark-sent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoice_id: invoiceId })
+    });
+    btn.textContent = '✅ Sent';
+    btn.classList.add('done');
+    btn.disabled = true;
+    const card = document.getElementById('card-' + invoiceId);
+    if (card) card.classList.add('sent');
+    toast('✅ Marked as sent: ' + invoiceId);
+  } catch(e) { toast('⚠️ Error saving sent status'); }
+}
+
+async function savePromise(invoiceId) {
+  const date = document.getElementById('promise-' + invoiceId)?.value;
+  if (!date) { toast('Please pick a date first'); return; }
+  try {
+    await fetch('/api/promise', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoice_id: invoiceId, promise_date: date })
+    });
+    toast(`🕐 Promise saved for ${invoiceId} — ${date}. Refreshing...`);
+    setTimeout(async () => {
+      const r = await fetch('/api/results');
+      DATA = await r.json();
+      render();
+    }, 1500);
+  } catch(e) { toast('⚠️ Error saving promise'); }
+}
+
+// ═════════════════════════════════════════════════════════
+// Upload modal
+// ═════════════════════════════════════════════════════════
+document.getElementById('openUploadBtn').onclick = () => {
+  document.getElementById('uploadModal').classList.add('open');
+};
+function closeModal() {
+  document.getElementById('uploadModal').classList.remove('open');
+  document.getElementById('run-log').style.display = 'none';
+  document.getElementById('run-log').textContent = '';
+  document.getElementById('btn-run-pipeline').disabled = false;
+  document.getElementById('btn-run-pipeline').textContent = '▶ Run Pipeline';
+}
+
+async function runPipeline() {
+  const inv = document.getElementById('file-invoices').files[0];
+  const bank = document.getElementById('file-bank').files[0];
+  if (!inv || !bank) { toast('Please select both CSV files'); return; }
+
+  const btn = document.getElementById('btn-run-pipeline');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running pipeline...';
+
+  const log = document.getElementById('run-log');
+  log.style.display = 'block';
+  log.textContent = 'Uploading files...\n';
+
+  const fd = new FormData();
+  fd.append('invoices', inv);
+  fd.append('bank_statement', bank);
+
+  try {
+    log.textContent += 'Running reconciliation → risk model → priority engine → chaser...\n';
+    const r = await fetch('/api/run', { method: 'POST', body: fd });
+    const data = await r.json();
+
+    if (data.error) {
+      log.textContent += `\nERROR: ${data.error}`;
+      btn.textContent = '⚠️ Error';
+      return;
+    }
+
+    log.textContent += `\n✅ Pipeline complete!\n${data.logs?.join('\n---\n') || ''}`;
+    btn.textContent = '✅ Done — click to close';
+    btn.disabled = false;
+    btn.onclick = async () => {
+      closeModal();
+      const res = await fetch('/api/results');
+      DATA = await res.json();
+      render();
+      btn.onclick = () => document.getElementById('uploadModal').classList.add('open');
+    };
+
+    toast('✅ Pipeline ran successfully! Results updated.');
+  } catch(e) {
+    log.textContent += `\nERROR: ${e.message}`;
+    btn.textContent = '⚠️ Failed';
+    btn.disabled = false;
+  }
+}
+
+// ═════════════════════════════════════════════════════════
+// Helpers
+// ═════════════════════════════════════════════════════════
+function formatINR(n) {
+  if (n === undefined || n === null) return '—';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function statusBadge(s) {
+  const map = {
+    matched: ['matched', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">check_circle</span> Matched'],
+    partial: ['partial', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">bolt</span> Partial'],
+    low_confidence: ['low_confidence', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">report_problem</span> Review'],
+    unmatched: ['unmatched', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">cancel</span> Unmatched'],
+  };
+  const [cls, label] = map[s] || ['', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function tierBadge(t) {
+  const map = { High: ['high','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">error</span>'], Medium: ['medium','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">warning</span>'], Low: ['low','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">check_circle</span>'] };
+  const [cls, icon] = map[t] || ['insufficient', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">help</span>'];
+  return `<span class="badge ${cls}">${icon} ${t}</span>`;
+}
+
+function bandBadge(b) {
+  const map = {
+    Critical: ['critical','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">error</span>'],
+    Standard: ['standard','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">warning</span>'],
+    Low: ['low','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">check_circle</span>'],
+    'Insufficient History': ['insufficient','<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">help</span>']
+  };
+  const [cls, icon] = map[b] || ['insufficient', '<span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">help</span>'];
+  return `<span class="badge ${cls}">${icon} ${b}</span>`;
+}
+
+function tierBadgeChaser(t) {
+  const map = {
+    'Final Escalation': 'final_escalation',
+    'Formal Notice': 'formal_notice',
+    'Firm Follow-up': 'firm_follow',
+    'Polite Reminder': 'polite_reminder',
+  };
+  const cls = map[t] || '';
+  return `<span class="badge ${cls}">${t}</span>`;
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function tomorrowStr() {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  return d.toISOString().split('T')[0];
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

@@ -1,51 +1,151 @@
 invoice_id,transaction_id,match_type,paid_amount,notes
-TST-0544,TXN-00001,rounding,10599,Rounding diff: -1
-TST-0533,TXN-00002,exact,117000,Exact amount match
-TST-0514,TXN-00003,exact,12500,Exact amount match
-TST-0543,TXN-00004,rounding,44999.5,Rounding diff: -0.5
-TST-0502,TXN-00005,rounding,424502,Rounding diff: 2
-TST-0523,TXN-00006,typo,26500,Narration has typo in client name
-TST-0545,TXN-00007,exact,84500,Exact amount match
-TST-0526,TXN-00008,exact,187100,Exact amount match
-TST-0521,TXN-00009,typo,140500,Narration has typo in client name
-TST-0535,TXN-00010,tds,60000,TDS deducted at 20%
-TST-0519,TXN-00011,tds,45180,TDS deducted at 10%
-TST-0509,TXN-00012,tds,51480,TDS deducted at 1%
-TST-0516,TXN-00013,typo,71600,Narration has typo in client name
-TST-0542,TXN-00014,exact,37200,Exact amount match
-TST-0539,TXN-00015,exact,25000,Exact amount match
-TST-0527,TXN-00016,exact,10400,Exact amount match
-TST-0537,TXN-00017,rounding,33450,Rounding diff: -50
-TST-0513,TXN-00018,rounding,48995,Rounding diff: -5
-TST-0530,TXN-00019,exact,39500,Exact amount match
-TST-0538,TXN-00020,exact,133089.05,Exact amount match
-TST-0547,TXN-00021,exact,21600,Exact amount match
-TST-0504,,unpaid,0,No payment received
-TST-0503,TXN-00022,tds,10450,TDS deducted at 5%
-TST-0515,TXN-00023,tds,74800,TDS deducted at 20%
-TST-0536,TXN-00024,combined,63405.7,Combined with TST-0517
-TST-0517,TXN-00024,combined,8000,Combined with TST-0536
-TST-0541,TXN-00025,rounding,9790,Rounding diff: -10
-TST-0524,TXN-00026,exact,6500,Exact amount match
-TST-0549,TXN-00027,exact,19500,Exact amount match
-TST-0507,TXN-00028,tds,13775,TDS deducted at 5%
-TST-0550,TXN-00029,partial,319118.78,Partial payment: 319118.78 of 378900
-TST-0505,TXN-00030,partial,209600,Partial payment: 209600 of 241500
-TST-0540,TXN-00031,rounding,48001,Rounding diff: 1
-TST-0511,TXN-00032,exact,21000,Exact amount match
-TST-0501,TXN-00033,exact,10000,Exact amount match
-TST-0520,,unpaid,0,No payment received
-TST-0522,TXN-00034,tds,6000,TDS deducted at 20%
-TST-0528,TXN-00035,exact,10500,Exact amount match
-TST-0531,TXN-00036,exact,13667.74,Exact amount match
-TST-0518,TXN-00037,exact,5500,Exact amount match
-TST-0508,TXN-00038,exact,44500,Exact amount match
-TST-0532,TXN-00039,exact,6500,Exact amount match
+TST-0591,TXN-00001,combined,326372.32,Combined with TST-0551
+TST-0551,TXN-00001,combined,70500,Combined with TST-0591
+TST-0630,TXN-00002,exact,42000,Exact amount match
+TST-0632,TXN-00003,combined,246500,Combined with TST-0519
+TST-0519,TXN-00003,combined,50200,Combined with TST-0632
+TST-0535,TXN-00004,partial,42200,Partial payment: 42200 of 75000
+TST-0605,TXN-00005,exact,11700,Exact amount match
+TST-0573,TXN-00006,exact,107000,Exact amount match
+TST-0633,TXN-00007,typo,111500,Narration has typo in client name
+TST-0584,TXN-00008,exact,82000,Exact amount match
+TST-0589,TXN-00009,combined,74500,Combined with TST-0533
+TST-0533,TXN-00009,combined,117000,Combined with TST-0589
+TST-0518,TXN-00010,tds,5445,TDS deducted at 1%
+TST-0636,TXN-00011,partial,239100,Partial payment: 239100 of 394000
+TST-0564,TXN-00012,typo,437500,Narration has typo in client name
+TST-0622,TXN-00013,exact,7500,Exact amount match
+TST-0606,TXN-00014,exact,14512.1,Exact amount match
+TST-0624,,unpaid,0,No payment received
+TST-0502,TXN-00015,combined,424500,Combined with TST-0643
+TST-0643,TXN-00015,combined,475100,Combined with TST-0502
+TST-0514,TXN-00016,rounding,12499.5,Rounding diff: -0.5
+TST-0629,TXN-00017,exact,13200,Exact amount match
+TST-0597,TXN-00018,combined,17200,Combined with TST-0566
+TST-0566,TXN-00018,combined,14000,Combined with TST-0597
+TST-0529,TXN-00019,exact,207500,Exact amount match
+TST-0527,,unpaid,0,No payment received
+TST-0601,TXN-00020,typo,25600,Narration has typo in client name
+TST-0592,,unpaid,0,No payment received
+TST-0614,,unpaid,0,No payment received
+TST-0558,TXN-00021,typo,26600,Narration has typo in client name
+TST-0631,TXN-00022,combined,7724.23,Combined with TST-0647
+TST-0647,TXN-00022,combined,233100,Combined with TST-0631
+TST-0523,TXN-00023,tds,21200,TDS deducted at 20%
+TST-0556,TXN-00024,tds,39600,TDS deducted at 1%
+TST-0553,TXN-00025,exact,103000,Exact amount match
+TST-0625,TXN-00026,exact,26000,Exact amount match
+TST-0637,TXN-00027,typo,139200,Narration has typo in client name
+TST-0577,TXN-00028,combined,10500,Combined with TST-0557
+TST-0557,TXN-00028,combined,120200,Combined with TST-0577
+TST-0610,TXN-00029,typo,17000,Narration has typo in client name
+TST-0579,TXN-00030,typo,18426.81,Narration has typo in client name
+TST-0649,TXN-00031,tds,96889.43,TDS deducted at 20%
+TST-0593,TXN-00032,rounding,495300.5,Rounding diff: 0.5
+TST-0513,TXN-00033,exact,49000,Exact amount match
+TST-0608,,unpaid,0,No payment received
+TST-0541,TXN-00034,typo,9800,Narration has typo in client name
+TST-0616,TXN-00035,exact,13700,Exact amount match
+TST-0626,,unpaid,0,No payment received
+TST-0572,TXN-00036,combined,314000,Combined with TST-0506
+TST-0506,TXN-00036,combined,11000,Combined with TST-0572
+TST-0548,TXN-00037,tds,79200,TDS deducted at 1%
+TST-0641,TXN-00038,partial,55473.38,Partial payment: 55473.38 of 108200
+TST-0618,TXN-00039,exact,11300,Exact amount match
+TST-0603,TXN-00040,combined,172500,Combined with TST-0543
+TST-0543,TXN-00040,combined,45000,Combined with TST-0603
+TST-0615,TXN-00041,partial,28573.28,Partial payment: 28573.28 of 30900
+TST-0644,TXN-00042,rounding,329501,Rounding diff: 1
+TST-0642,,unpaid,0,No payment received
+TST-0609,TXN-00043,exact,444700,Exact amount match
+TST-0512,TXN-00044,typo,24000,Narration has typo in client name
+TST-0545,TXN-00045,tds,67600,TDS deducted at 20%
+TST-0546,TXN-00046,partial,9350.01,Partial payment: 9350.01 of 10933.89
+TST-0613,TXN-00047,rounding,35199.5,Rounding diff: -0.5
+TST-0611,TXN-00048,typo,76600,Narration has typo in client name
+TST-0517,TXN-00049,exact,8000,Exact amount match
+TST-0583,TXN-00050,exact,12500,Exact amount match
+TST-0646,TXN-00051,tds,91826,TDS deducted at 2%
+TST-0576,TXN-00052,tds,23200,TDS deducted at 20%
+TST-0555,TXN-00053,rounding,363498,Rounding diff: -2
+TST-0598,TXN-00054,exact,83500,Exact amount match
+TST-0538,TXN-00055,exact,133089.05,Exact amount match
+TST-0574,TXN-00056,combined,338000,Combined with TST-0639
+TST-0639,TXN-00056,combined,118700,Combined with TST-0574
+TST-0531,TXN-00057,tds,10933.74,TDS deducted at 20%
+TST-0547,TXN-00058,tds,21384,TDS deducted at 1%
+TST-0537,TXN-00059,exact,33500,Exact amount match
+TST-0526,TXN-00060,rounding,187090,Rounding diff: -10
+TST-0528,TXN-00061,typo,10500,Narration has typo in client name
+TST-0560,TXN-00062,rounding,33999,Rounding diff: -1
+TST-0635,TXN-00063,exact,42013.7,Exact amount match
+TST-0594,TXN-00064,tds,11700,TDS deducted at 10%
+TST-0570,TXN-00065,exact,188500,Exact amount match
+TST-0588,TXN-00066,typo,119000,Narration has typo in client name
+TST-0619,TXN-00067,rounding,113190,Rounding diff: -10
+TST-0580,TXN-00068,tds,67745.24,TDS deducted at 2%
+TST-0544,TXN-00069,rounding,10610,Rounding diff: 10
+TST-0645,TXN-00070,exact,97900,Exact amount match
+TST-0634,TXN-00071,tds,252225,TDS deducted at 5%
+TST-0552,TXN-00072,partial,86800,Partial payment: 86800 of 124000
 TST-0525,,unpaid,0,No payment received
-TST-0548,TXN-00040,rounding,79950,Rounding diff: -50
-TST-0546,TXN-00041,typo,10933.89,Narration has typo in client name
-TST-0529,TXN-00042,combined,207500,Combined with TST-0512
-TST-0512,TXN-00042,combined,24000,Combined with TST-0529
-TST-0510,TXN-00043,exact,209000,Exact amount match
-TST-0534,TXN-00044,tds,230800,TDS deducted at 20%
-TST-0506,TXN-00045,exact,11000,Exact amount match
+TST-0508,TXN-00073,typo,44500,Narration has typo in client name
+TST-0540,TXN-00074,combined,48000,Combined with TST-0590
+TST-0590,TXN-00074,combined,35000,Combined with TST-0540
+TST-0511,TXN-00075,tds,16800,TDS deducted at 20%
+TST-0501,TXN-00076,exact,10000,Exact amount match
+TST-0520,TXN-00077,combined,24000,Combined with TST-0521
+TST-0521,TXN-00077,combined,140500,Combined with TST-0520
+TST-0550,,unpaid,0,No payment received
+TST-0504,TXN-00078,combined,118000,Combined with TST-0599
+TST-0599,TXN-00078,combined,10000,Combined with TST-0504
+TST-0571,TXN-00079,typo,42000,Narration has typo in client name
+TST-0554,TXN-00080,exact,7000,Exact amount match
+TST-0507,,unpaid,0,No payment received
+TST-0539,TXN-00081,exact,25000,Exact amount match
+TST-0623,TXN-00082,typo,37100,Narration has typo in client name
+TST-0563,TXN-00083,typo,420000,Narration has typo in client name
+TST-0505,TXN-00084,typo,241500,Narration has typo in client name
+TST-0567,TXN-00085,exact,40238.29,Exact amount match
+TST-0532,TXN-00086,typo,6500,Narration has typo in client name
+TST-0650,TXN-00087,partial,30000,Partial payment: 30000 of 36000
+TST-0516,TXN-00088,combined,71600,Combined with TST-0536
+TST-0536,TXN-00088,combined,63405.7,Combined with TST-0516
+TST-0627,TXN-00089,typo,13500,Narration has typo in client name
+TST-0561,TXN-00090,tds,39900,TDS deducted at 5%
+TST-0534,TXN-00091,rounding,288550,Rounding diff: 50
+TST-0638,TXN-00092,exact,60500,Exact amount match
+TST-0612,TXN-00093,partial,247431.09,Partial payment: 247431.09 of 292000
+TST-0604,TXN-00094,exact,7500,Exact amount match
+TST-0568,TXN-00095,exact,22000,Exact amount match
+TST-0565,TXN-00096,exact,316500,Exact amount match
+TST-0522,TXN-00097,typo,7500,Narration has typo in client name
+TST-0581,TXN-00098,combined,221000,Combined with TST-0503
+TST-0503,TXN-00098,combined,11000,Combined with TST-0581
+TST-0542,TXN-00099,exact,37200,Exact amount match
+TST-0607,TXN-00100,partial,23000,Partial payment: 23000 of 36500
+TST-0549,TXN-00101,combined,19500,Combined with TST-0596
+TST-0596,TXN-00101,combined,421500,Combined with TST-0549
+TST-0620,TXN-00102,partial,8827.45,Partial payment: 8827.45 of 11000
+TST-0617,TXN-00103,exact,52500,Exact amount match
+TST-0530,TXN-00104,combined,39500,Combined with TST-0640
+TST-0640,TXN-00104,combined,9500,Combined with TST-0530
+TST-0587,TXN-00105,combined,11500,Combined with TST-0562
+TST-0562,TXN-00105,combined,6500,Combined with TST-0587
+TST-0578,TXN-00106,exact,363200,Exact amount match
+TST-0595,TXN-00107,typo,238500,Narration has typo in client name
+TST-0524,TXN-00108,typo,6500,Narration has typo in client name
+TST-0575,TXN-00109,tds,28400,TDS deducted at 20%
+TST-0515,TXN-00110,exact,93500,Exact amount match
+TST-0582,TXN-00111,exact,19700,Exact amount match
+TST-0621,TXN-00112,exact,11339.43,Exact amount match
+TST-0585,TXN-00113,exact,137000,Exact amount match
+TST-0586,TXN-00114,exact,74022.85,Exact amount match
+TST-0648,TXN-00115,typo,411500,Narration has typo in client name
+TST-0559,TXN-00116,exact,411000,Exact amount match
+TST-0510,TXN-00117,exact,209000,Exact amount match
+TST-0569,TXN-00118,combined,54500,Combined with TST-0509
+TST-0509,TXN-00118,combined,52000,Combined with TST-0569
+TST-0602,,unpaid,0,No payment received
+TST-0628,TXN-00119,typo,111500,Narration has typo in client name
+TST-0600,TXN-00120,rounding,8000.5,Rounding diff: 0.5

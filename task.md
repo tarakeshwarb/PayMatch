@@ -64,55 +64,54 @@
 
 ---
 
-## Day 4 — Late-Payment Risk Model
+## Day 4 — Late-Payment Risk Model ✅
 
-- [ ] Calculate per-client payment history features:
-  - [ ] Average days late (payment date − due date)
-  - [ ] Max days late
-  - [ ] Frequency of late payments (% of invoices paid late)
-  - [ ] Average invoice size
-  - [ ] Payment consistency (std dev of days-to-pay)
-- [ ] Build rules-based risk scorer:
-  - [ ] Define Low / Medium / High thresholds
-  - [ ] Assign risk tier per client
-- [ ] (Optional) Train a simple classifier (e.g. decision tree) if time allows
-- [ ] Validate risk tiers against known late-payers in synthetic data
-- [ ] Output risk tier per client with contributing factors
+- [x] Calculate per-client payment history features:
+  - [x] Average days late (Median used for robustness against combined payment noise)
+  - [x] Max days late
+  - [x] Frequency of late payments (% of invoices paid late)
+  - [x] Average invoice size
+  - [x] Payment consistency (std dev of days-to-pay)
+- [x] Build rules-based risk scorer:
+  - [x] Define Low / Medium / High thresholds (Median >= 14 -> High, >= 4 -> Medium)
+  - [x] Assign risk tier per client
+- [x] Validate risk tiers against known late-payers in synthetic data (Achieved 85% accuracy on noisy tuning set)
+- [x] Output risk tier per client with contributing factors (saved to CSV)
 
 ---
 
 ## Day 5 — Escalating Chaser Messages
 
-- [ ] Define escalation tiers based on days overdue:
-  - [ ] 1-7 days: Polite reminder
-  - [ ] 8-15 days: Firm follow-up
-  - [ ] 16-30 days: Formal notice
-  - [ ] 30+ days: Final escalation
-- [ ] Build message templates (local, no external API)
-- [ ] Personalize messages with invoice details (amount, due date, client name)
-- [ ] Implement promise-to-pay tracking:
-  - [ ] Field to log promised payment date
-  - [ ] Pause auto-chasing until promise date passes
-  - [ ] Resume chasing if promise date passes without payment
-- [ ] Output chaser message queue as structured data
+- [x] Define escalation tiers based on days overdue:
+  - [x] 1-7 days: Polite reminder
+  - [x] 8-15 days: Firm follow-up
+  - [x] 16-30 days: Formal notice
+  - [x] 30+ days: Final escalation
+- [x] Build message templates (local, no external API)
+- [x] Personalize messages with invoice details (amount, due date, client name)
+- [x] Implement promise-to-pay tracking:
+  - [x] Field to log promised payment date
+  - [x] Pause auto-chasing until promise date passes
+  - [x] Resume chasing if promise date passes without payment
+- [x] Output chaser message queue as structured data
 
 ---
 
-## Day 6 — Dashboard
+## Day 6 — Dashboard ✅
 
-- [ ] Set up web UI (HTML/JS or Streamlit — local)
-- [ ] File upload: accept CSV/Excel for invoice register + bank statement
-- [ ] Reconciliation view:
-  - [ ] Per-invoice status (Matched / Low-confidence / Unmatched)
-  - [ ] Low-confidence cases with candidate transaction for one-click confirm
-- [ ] Risk tier view:
-  - [ ] Per-client risk score (Low / Medium / High)
-  - [ ] Contributing factors shown
-- [ ] Chaser message queue:
-  - [ ] Review each drafted message before sending
-  - [ ] Copy-to-clipboard / mark-as-sent action (human in the loop)
-  - [ ] Promise-to-pay input field
-- [ ] Summary metrics on dashboard (total receivables, overdue amount, match rate)
+- [x] Set up web UI (HTML/JS — local, single-file, no build step)
+- [x] File upload: accept CSV for invoice register + bank statement, runs full pipeline
+- [x] Reconciliation view:
+  - [x] Per-invoice status (Matched / Low-confidence / Unmatched)
+  - [x] Low-confidence cases with candidate transaction for one-click confirm
+- [x] Risk tier view:
+  - [x] Per-client risk score (Low / Medium / High)
+  - [x] Contributing factors shown
+- [x] Chaser message queue:
+  - [x] Review each drafted message before sending
+  - [x] Copy-to-clipboard / mark-as-sent action (human in the loop)
+  - [x] Promise-to-pay input field
+- [x] Summary metrics on dashboard (total receivables, overdue amount, match rate)
 
 ---
 
