@@ -23,6 +23,7 @@ const BASE_DIR = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(BASE_DIR, 'output');
 const DATA_DIR = path.join(BASE_DIR, 'data', 'tuning');
 const PROMISES_PATH = path.join(BASE_DIR, 'data', 'promises.json');
+const HISTORY_PATH = path.join(BASE_DIR, 'data', 'match_history.json');
 const SENT_PATH = path.join(OUTPUT_DIR, 'sent_log.json');
 
 app.use(cors());
@@ -90,7 +91,12 @@ app.get('/api/results', (_req, res) => {
         // Compute summary metrics
         const summary = computeSummary(recon, priority, chaser);
 
-        res.json({ recon, priority, chaser, riskScores, summary });
+        let history: any[] = [];
+        if (fs.existsSync(HISTORY_PATH)) {
+            history = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf-8'));
+        }
+
+        res.json({ recon, priority, chaser, riskScores, summary, history });
     } catch (err: any) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -139,6 +145,26 @@ app.post('/api/run', upload.fields([
                 logs.push(`ERROR: ${e.message}`);
             }
         }
+
+        // Pipeline complete. Compute new summary for history.
+        const dataset = 'tuning';
+        const reconNew = fs.existsSync(path.join(OUTPUT_DIR, `reconciliation_${dataset}.json`))
+            ? JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, `reconciliation_${dataset}.json`), 'utf-8')) : null;
+        const priorityNew = fs.existsSync(path.join(OUTPUT_DIR, `client_priority_queue_${dataset}.json`))
+            ? JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, `client_priority_queue_${dataset}.json`), 'utf-8').replace(/^\uFEFF/, '')) : null;
+        const chaserNewRaw = fs.existsSync(path.join(OUTPUT_DIR, `chaser_queue_${dataset}.json`))
+            ? JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, `chaser_queue_${dataset}.json`), 'utf-8')) : [];
+            
+        const newSummary = computeSummary(reconNew, priorityNew, chaserNewRaw);
+        
+        let history: any[] = [];
+        if (fs.existsSync(HISTORY_PATH)) {
+            history = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf-8'));
+        }
+        
+        const runNum = history.length + 1;
+        history.push({ run: `Run ${runNum}`, match_rate: parseFloat(newSummary.match_rate_pct) });
+        fs.writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2));
 
         return res.json({ success: true, logs });
     } catch (err: any) {

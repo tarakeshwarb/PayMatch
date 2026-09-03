@@ -454,6 +454,9 @@ td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-si
   <button class="nav-tab" data-tab="chaser">
     <span class="material-symbols-outlined">forward_to_inbox</span> Chaser Queue
   </button>
+  <button class="nav-tab" data-tab="architecture">
+    <span class="material-symbols-outlined">account_tree</span> Architecture
+  </button>
 </nav>
 
 <!-- ── Mobile bottom nav ───────────────────────────────── -->
@@ -469,6 +472,9 @@ td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-si
   </button>
   <button class="nav-tab" data-tab="chaser">
     <span class="material-symbols-outlined" style="font-size:20px;">forward_to_inbox</span> Queue
+  </button>
+  <button class="nav-tab" data-tab="architecture">
+    <span class="material-symbols-outlined" style="font-size:20px;">account_tree</span> Arch
   </button>
 </nav>
 
@@ -522,22 +528,10 @@ td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-si
           <button class="chart-pill">3M</button>
         </div>
       </div>
-      <div class="chart-area">
-        <svg viewBox="0 0 1000 240" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.12"/>
-              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <path d="M0,240 L0,200 C100,180 200,210 300,150 C400,90 500,170 600,100 C700,30 800,70 900,40 L1000,15 L1000,240 Z" fill="url(#lineFill)"/>
-          <path d="M0,200 C100,180 200,210 300,150 C400,90 500,170 600,100 C700,30 800,70 900,40 L1000,15" fill="none" stroke="#6366f1" stroke-width="2.5"/>
-          <circle cx="300" cy="150" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
-          <circle cx="600" cy="100" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
-          <circle cx="900" cy="40" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
-        </svg>
+      <div class="chart-area" id="chart-area">
+        <!-- SVG injected by JS -->
       </div>
-      <div class="chart-labels"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+      <div class="chart-labels" id="chart-labels"></div>
     </div>
   </div>
 
@@ -612,7 +606,93 @@ td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-si
     <div class="chaser-grid" id="chaser-grid"></div>
   </div>
 
+  <!-- ═══ Tab: Architecture ═══ -->
+  <div class="tab-panel" id="panel-architecture">
+    <div class="page-header">
+      <h1>System Architecture</h1>
+      <p>Interactive pipeline diagram — drag nodes, click to expand details, or run the flow simulation.</p>
+    </div>
+    <div id="arch-container" style="position:relative; width:100%; height:calc(100vh - 160px); border:1px solid var(--border); border-radius:var(--r); background:#fff; overflow:hidden; cursor:grab;">
+      <div id="arch-layer" style="position:absolute; top:0; left:0; transform-origin:0 0;">
+        <svg id="arch-svg" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:4000px;height:3000px;pointer-events:none;"></svg>
+      </div>
+      <!-- Arch controls -->
+      <div style="position:absolute;top:12px;left:12px;z-index:10;">
+        <button class="arch-ctrl" onclick="exitArch()" style="padding:6px 14px;">← BACK</button>
+      </div>
+      <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:10;">
+        <button class="arch-ctrl" onclick="archSimulate()" id="arch-sim-btn" style="padding:6px 14px;">▶ RUN</button>
+        <button class="arch-ctrl" onclick="archZoomIn()">+</button>
+        <button class="arch-ctrl" onclick="archZoomOut()">−</button>
+        <button class="arch-ctrl" onclick="archFitAll()">□</button>
+      </div>
+    </div>
+  </div>
+
 </main>
+
+<style>
+/* ── Architecture Tab Styles ── */
+.arch-ctrl {
+  border: 2px solid #000; background: #fff; font-family: monospace;
+  font-size: 14px; font-weight: bold; cursor: pointer;
+  padding: 6px 10px; border-radius: 0;
+}
+.arch-ctrl:hover { background: #000; color: #fff; }
+
+.arch-node {
+  position: absolute; background: #fff; border: 2px solid #000;
+  cursor: pointer; user-select: none; min-width: 160px; font-family: monospace;
+}
+.arch-node:hover { background: #f5f5f5; }
+.arch-node.dragging { cursor: grabbing; opacity: 0.9; }
+
+.arch-node .a-head {
+  background: #000; color: #fff; padding: 5px 10px;
+  font-size: 11px; font-weight: bold; letter-spacing: 0.5px;
+}
+.arch-node .a-body { padding: 8px 10px; font-size: 10px; line-height: 1.6; color: #333; }
+.arch-node .a-body .a-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 2px 0; }
+.arch-node .a-body .a-row:last-child { border-bottom: none; }
+.arch-node .a-body .a-key { color: #888; }
+.arch-node .a-body .a-val { font-weight: bold; color: #000; }
+
+.arch-node .a-ports { padding: 4px 10px 6px; border-top: 1px solid #ddd; font-size: 9px; color: #666; }
+.arch-node .a-port { display: flex; align-items: center; gap: 5px; padding: 1px 0; }
+.arch-node .a-dot { width: 6px; height: 6px; border: 1.5px solid #000; border-radius: 50%; }
+.arch-node .a-dot.in { background: #fff; }
+.arch-node .a-dot.out { background: #000; }
+
+.arch-node .a-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid #ddd; }
+.arch-node.open .a-detail { max-height: 300px; }
+.arch-node .a-detail-inner { padding: 8px 10px; font-size: 10px; }
+.arch-node .a-detail-inner .ad-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dotted #ddd; }
+.arch-node .a-detail-inner .ad-row:last-child { border-bottom: none; }
+.arch-node .a-detail-inner .ad-key { color: #999; }
+.arch-node .a-detail-inner .ad-val { color: #000; font-weight: bold; }
+
+.arch-wire { fill: none; stroke: #000; stroke-width: 1.5; }
+.arch-wire-label { font-family: monospace; font-size: 9px; fill: #666; text-anchor: middle; }
+
+.arch-node.highlight {
+  border-color: #000; box-shadow: 4px 4px 0 #000;
+  transform: translate(-2px, -2px); transition: all 0.3s;
+}
+.arch-wire.highlight {
+  stroke-width: 3; stroke-dasharray: 8 4;
+  animation: arch-dash 0.5s linear infinite;
+}
+@keyframes arch-dash { to { stroke-dashoffset: -12; } }
+
+/* Fullscreen mode for architecture */
+body.arch-fullscreen .topbar,
+body.arch-fullscreen .sidebar,
+body.arch-fullscreen .mobile-nav { display: none !important; }
+body.arch-fullscreen .main { margin-left: 0; padding: 0; max-width: none; }
+body.arch-fullscreen #panel-architecture { position: fixed; inset: 0; z-index: 200; }
+body.arch-fullscreen #panel-architecture .page-header { display: none; }
+body.arch-fullscreen #arch-container { width: 100vw !important; height: 100vh !important; border: none !important; border-radius: 0 !important; }
+</style>
 
 <!-- ── Upload modal ────────────────────────────────────── -->
 <div class="modal-overlay" id="uploadModal">
@@ -675,8 +755,32 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
     // Activate all nav-tabs with the same data-tab (sidebar + mobile)
     document.querySelectorAll(`.nav-tab[data-tab="${tab}"]`).forEach(b => b.classList.add('active'));
     document.getElementById('panel-' + tab).classList.add('active');
+    // Fullscreen for architecture tab
+    if (tab === 'architecture') {
+      document.body.classList.add('arch-fullscreen');
+      history.pushState({ arch: true }, '', '#architecture');
+    } else {
+      document.body.classList.remove('arch-fullscreen');
+    }
   });
 });
+
+// Browser back button exits architecture fullscreen
+window.addEventListener('popstate', (e) => {
+  if (document.body.classList.contains('arch-fullscreen')) {
+    exitArch();
+  }
+});
+
+function exitArch() {
+  document.body.classList.remove('arch-fullscreen');
+  // Switch back to summary tab
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab[data-tab="summary"]').forEach(b => b.classList.add('active'));
+  document.getElementById('panel-summary').classList.add('active');
+  if (location.hash === '#architecture') history.back();
+}
 
 // ═════════════════════════════════════════════════════════
 // Render all
@@ -723,6 +827,73 @@ function renderSummary() {
       <div style="font-size:12px;color:var(--muted);">${c.sub}</div>
     </div>
   `).join('');
+
+  renderChart();
+}
+
+function renderChart() {
+  const history = DATA?.history || [];
+  if (history.length === 0) return;
+
+  const w = 1000;
+  const h = 240;
+  
+  // Find min and max for scaling
+  const minRate = Math.max(0, Math.min(...history.map(d => d.match_rate)) - 10); 
+  const maxRate = Math.min(100, Math.max(...history.map(d => d.match_rate)) + 10);
+  const range = maxRate - minRate || 1;
+
+  // Calculate points
+  const points = history.map((d, i) => {
+    // If only 1 point, put in middle. If 2 points, 25% and 75%, else distribute evenly.
+    let x = w / 2;
+    if (history.length > 1) {
+       x = (i / (history.length - 1)) * (w - 40) + 20; // 20px padding
+    }
+    const y = h - ((d.match_rate - minRate) / range) * (h - 60) - 40; 
+    return { x, y, label: d.run, rate: d.match_rate };
+  });
+
+  let pathD = `M0,${h} `;
+  let lineD = '';
+
+  if (points.length === 1) {
+      pathD += `L0,${points[0].y} L${w},${points[0].y} L${w},${h} Z`;
+      lineD = `M0,${points[0].y} L${w},${points[0].y}`;
+  } else {
+      pathD += `L${points[0].x},${points[0].y} `;
+      lineD = `M${points[0].x},${points[0].y} `;
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i-1];
+        const curr = points[i];
+        const cx1 = prev.x + (curr.x - prev.x) / 2;
+        const cx2 = prev.x + (curr.x - prev.x) / 2;
+        pathD += `C${cx1},${prev.y} ${cx2},${curr.y} ${curr.x},${curr.y} `;
+        lineD += `C${cx1},${prev.y} ${cx2},${curr.y} ${curr.x},${curr.y} `;
+      }
+      pathD += `L${points[points.length-1].x},${h} Z`;
+  }
+
+  const circles = points.map(p => `
+    <circle cx="${p.x}" cy="${p.y}" fill="white" r="5" stroke="#6366f1" stroke-width="2"/>
+    <text x="${p.x}" y="${p.y - 12}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">${p.rate.toFixed(1)}%</text>
+  `).join('');
+
+  document.getElementById('chart-area').innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#6366f1" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${pathD}" fill="url(#lineFill)"/>
+      <path d="${lineD}" fill="none" stroke="#6366f1" stroke-width="3"/>
+      ${circles}
+    </svg>
+  `;
+
+  document.getElementById('chart-labels').innerHTML = points.map(p => `<span style="flex:1; text-align:center;">${p.label}</span>`).join('');
 }
 
 // ═════════════════════════════════════════════════════════
@@ -1134,6 +1305,271 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ═════════════════════════════════════════════════════════
+// Architecture Diagram
+// ═════════════════════════════════════════════════════════
+const archNodes = [
+  { id:'inv', title:'INVOICE CSV', x:60, y:120, group:0,
+    ports:{in:[], out:['invoice_id, client, amt, due']},
+    rows:[['rows','100'],['format','CSV'],['total','₹33L']],
+    detail:[['invoice_id','INV-0001'],['client','Gupta & Sons'],['amount','₹3,35,500'],['due_date','2025-03-18']] },
+  { id:'bank', title:'BANK STMT CSV', x:60, y:380, group:0,
+    ports:{in:[], out:['txn_id, date, amt, narration']},
+    rows:[['txns','98'],['format','CSV'],['types','UPI+NEFT']],
+    detail:[['typos','~15%'],['combined pays','~12%'],['TDS deductions','~10%'],['noise txns','10-18']] },
+  { id:'recon', title:'RECONCILIATION ENGINE', x:400, y:200, group:1,
+    ports:{in:['invoices.csv','bank_stmt.csv'], out:['matched, unmatched, review']},
+    rows:[['match rate','75.5%'],['false match','0.0%'],['precision','100%']],
+    detail:[['Pass 1','Invoice ID in narration'],['Pass 2','Client name + amount'],['Pass 3','Combined payment'],['Pass 4','Partial payment (50-98%)'],['Pass 5','Remaining → review']] },
+  { id:'tds', title:'TDS DETECTOR', x:420, y:480, group:1,
+    ports:{in:['invoice-txn pairs'], out:['tds_rate, net_amount']},
+    rows:[['detected','11/11'],['rates','5 tiers'],['tolerance','0.5%']],
+    detail:[['1% (194Q)','Goods'],['2% (194C)','Contractor'],['5% (194J)','Individual'],['10% (194J)','Company'],['20%','No-PAN']] },
+  { id:'risk', title:'RISK MODEL', x:760, y:120, group:2,
+    ports:{in:['matched history'], out:['risk_tier per client']},
+    rows:[['accuracy','85%'],['correct','17/20'],['tiers','3']],
+    detail:[['🔴 High','Median ≥ 14d late'],['🟡 Medium','Median ≥ 4d late'],['🟢 Low','Median < 4d late']] },
+  { id:'priority', title:'PRIORITY ENGINE', x:760, y:380, group:3,
+    ports:{in:['risk_tiers','outstanding ₹'], out:['priority_queue']},
+    rows:[['metric','₹ EAR'],['sort','risk × ₹'],['min hist','3 inv']],
+    detail:[['P(late)','from ground truth'],['Outstanding','live from recon'],['EAR','P(late) × Outstanding']] },
+  { id:'chaser', title:'CHASER ENGINE', x:1100, y:250, group:4,
+    ports:{in:['priority_queue','promise_dates'], out:['escalating messages']},
+    rows:[['tones','4 levels'],['bands','3 risk'],['promise','tracked']],
+    detail:[['Gentle','1-3 days'],['Firm','4-10 days'],['Formal','11-21 days'],['Final','21+ days'],['Broken','→ immediate']] },
+  { id:'dash', title:'DASHBOARD', x:1420, y:150, group:5,
+    ports:{in:['all outputs'], out:['web UI']},
+    rows:[['tabs','4'],['metrics','8'],['port',':3000']],
+    detail:[['📊 Summary','metric cards'],['🔄 Recon','invoice status'],['🎯 Risk','client tiers'],['📨 Chaser','message queue']] },
+  { id:'human', title:'HUMAN REVIEW', x:1420, y:420, group:5,
+    ports:{in:['low-conf matches','chaser drafts'], out:['confirm/reject']},
+    rows:[['confirm','✓'],['reject','✗'],['copy','📋']],
+    detail:[['Low-conf','→ Confirm/Reject'],['Chasers','→ Review & Send'],['Promise','→ Set date, pause']] }
+];
+
+const archWires = [
+  {from:'inv',to:'recon',label:'invoices.csv'},
+  {from:'bank',to:'recon',label:'bank_stmt.csv'},
+  {from:'recon',to:'tds',label:'pairs'},
+  {from:'tds',to:'recon',label:'tds_results',dash:true},
+  {from:'recon',to:'risk',label:'matched history'},
+  {from:'recon',to:'priority',label:'outstanding ₹'},
+  {from:'risk',to:'priority',label:'risk_tiers'},
+  {from:'priority',to:'chaser',label:'priority_queue'},
+  {from:'chaser',to:'dash',label:'chaser_queue'},
+  {from:'recon',to:'dash',label:'recon_results'},
+  {from:'risk',to:'dash',label:'risk_scores'},
+  {from:'dash',to:'human',label:'review items'},
+  {from:'human',to:'chaser',label:'promise dates',dash:true},
+];
+
+let aPanX=0, aPanY=0, aZoom=1;
+let aPanning=false, aPsx=0, aPsy=0;
+let aDragId=null, aDox=0, aDoy=0, aDragged=false;
+const aEls={}, aPos={};
+let archBuilt = false;
+
+function buildArch() {
+  if (archBuilt) return;
+  archBuilt = true;
+  const layer = document.getElementById('arch-layer');
+
+  archNodes.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'arch-node';
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    el.innerHTML = `
+      <div class="a-head">${n.title}</div>
+      <div class="a-body">
+        ${n.rows.map(([k,v])=>`<div class="a-row"><span class="a-key">${k}</span><span class="a-val">${v}</span></div>`).join('')}
+      </div>
+      <div class="a-ports">
+        ${n.ports.in.map(p=>`<div class="a-port"><span class="a-dot in"></span>${p}</div>`).join('')}
+        ${n.ports.out.map(p=>`<div class="a-port"><span class="a-dot out"></span>${p}</div>`).join('')}
+      </div>
+      <div class="a-detail"><div class="a-detail-inner">
+        ${n.detail.map(([k,v])=>`<div class="ad-row"><span class="ad-key">${k}</span><span class="ad-val">${v}</span></div>`).join('')}
+      </div></div>
+    `;
+
+    el.addEventListener('click', () => {
+      if (aDragged) { aDragged = false; return; }
+      el.classList.toggle('open');
+      setTimeout(drawArchWires, 350);
+    });
+
+    el.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      aDragId = n.id;
+      aDox = e.clientX / aZoom - n.x;
+      aDoy = e.clientY / aZoom - n.y;
+      aDragged = false;
+      el.classList.add('dragging');
+    });
+
+    layer.appendChild(el);
+    aEls[n.id] = el;
+    aPos[n.id] = { x: n.x, y: n.y };
+  });
+
+  // Pan
+  const container = document.getElementById('arch-container');
+  container.addEventListener('mousedown', e => {
+    if (aDragId) return;
+    aPanning = true;
+    aPsx = e.clientX - aPanX;
+    aPsy = e.clientY - aPanY;
+    container.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', e => {
+    if (aPanning) {
+      aPanX = e.clientX - aPsx;
+      aPanY = e.clientY - aPsy;
+      applyArchTransform();
+    }
+    if (aDragId) {
+      const n = archNodes.find(n => n.id === aDragId);
+      n.x = e.clientX / aZoom - aDox - aPanX / aZoom;
+      n.y = e.clientY / aZoom - aDoy - aPanY / aZoom;
+      aPos[aDragId] = { x: n.x, y: n.y };
+      aEls[aDragId].style.left = n.x + 'px';
+      aEls[aDragId].style.top = n.y + 'px';
+      aDragged = true;
+      drawArchWires();
+    }
+  });
+  document.addEventListener('mouseup', () => {
+    if (aPanning) { aPanning = false; document.getElementById('arch-container').style.cursor = 'grab'; }
+    if (aDragId) { aEls[aDragId].classList.remove('dragging'); aDragId = null; }
+  });
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    const d = e.deltaY > 0 ? 0.92 : 1.08;
+    const nz = Math.max(0.3, Math.min(3, aZoom * d));
+    const rect = container.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    aPanX = mx - (mx - aPanX) * (nz / aZoom);
+    aPanY = my - (my - aPanY) * (nz / aZoom);
+    aZoom = nz;
+    applyArchTransform();
+  }, { passive: false });
+
+  requestAnimationFrame(() => { drawArchWires(); archFitAll(); });
+}
+
+function applyArchTransform() {
+  document.getElementById('arch-layer').style.transform = `translate(${aPanX}px,${aPanY}px) scale(${aZoom})`;
+}
+
+function archEdge(fid, tid) {
+  const f = aPos[fid], t = aPos[tid];
+  const fe = aEls[fid], te = aEls[tid];
+  const fcx = f.x + fe.offsetWidth/2, fcy = f.y + fe.offsetHeight/2;
+  const tcx = t.x + te.offsetWidth/2, tcy = t.y + te.offsetHeight/2;
+  let fp, tp;
+  if (tcx > fcx) { fp = {x:f.x+fe.offsetWidth, y:fcy}; tp = {x:t.x, y:tcy}; }
+  else { fp = {x:f.x, y:fcy}; tp = {x:t.x+te.offsetWidth, y:tcy}; }
+  return {fp, tp};
+}
+
+function drawArchWires() {
+  const svg = document.getElementById('arch-svg');
+  svg.innerHTML = '';
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const mk = document.createElementNS('http://www.w3.org/2000/svg','marker');
+  mk.setAttribute('id','arch-arr'); mk.setAttribute('markerWidth','7'); mk.setAttribute('markerHeight','5');
+  mk.setAttribute('refX','7'); mk.setAttribute('refY','2.5'); mk.setAttribute('orient','auto');
+  const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  poly.setAttribute('points','0 0, 7 2.5, 0 5'); poly.setAttribute('fill','#000');
+  mk.appendChild(poly); defs.appendChild(mk); svg.appendChild(defs);
+
+  archWires.forEach((w,i) => {
+    const {fp,tp} = archEdge(w.from, w.to);
+    const dx = Math.abs(tp.x - fp.x);
+    const cp = Math.max(50, dx * 0.4);
+    let c1x,c1y,c2x,c2y;
+    if (tp.x >= fp.x) { c1x=fp.x+cp; c1y=fp.y; c2x=tp.x-cp; c2y=tp.y; }
+    else { c1x=fp.x-cp; c1y=fp.y; c2x=tp.x+cp; c2y=tp.y; }
+    const d = `M ${fp.x} ${fp.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tp.x} ${tp.y}`;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d); path.setAttribute('class','arch-wire'); path.setAttribute('data-idx',i);
+    path.setAttribute('marker-end','url(#arch-arr)');
+    if (w.dash) path.setAttribute('stroke-dasharray','5 3');
+    svg.appendChild(path);
+    const mx=(fp.x+tp.x)/2, my=(fp.y+tp.y)/2-8;
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('class','arch-wire-label'); txt.setAttribute('x',mx); txt.setAttribute('y',my);
+    txt.textContent = w.label; svg.appendChild(txt);
+  });
+}
+
+function archZoomIn() { aZoom = Math.min(3, aZoom * 1.2); applyArchTransform(); }
+function archZoomOut() { aZoom = Math.max(0.3, aZoom / 1.2); applyArchTransform(); }
+function archFitAll() {
+  let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+  archNodes.forEach(n => {
+    const e=aEls[n.id], p=aPos[n.id];
+    x1=Math.min(x1,p.x); y1=Math.min(y1,p.y);
+    x2=Math.max(x2,p.x+(e.offsetWidth||220)); y2=Math.max(y2,p.y+(e.offsetHeight||180));
+  });
+  const pad=60;
+  const container = document.getElementById('arch-container');
+  const cw = container.offsetWidth, ch = container.offsetHeight;
+  const w=x2-x1+pad*2, h=y2-y1+pad*2;
+  aZoom = Math.min(cw/w, ch/h, 1.5);
+  aPanX = (cw - w*aZoom)/2 - x1*aZoom + pad*aZoom;
+  aPanY = (ch - h*aZoom)/2 - y1*aZoom + pad*aZoom;
+  applyArchTransform();
+}
+
+let archSimRunning = false;
+function archSimulate() {
+  if (archSimRunning) return;
+  archSimRunning = true;
+  const btn = document.getElementById('arch-sim-btn');
+  btn.style.background = '#000'; btn.style.color = '#fff'; btn.textContent = '● RUNNING';
+  const groups = [0,1,2,3,4,5];
+  let step = 0;
+  function next() {
+    if (step >= groups.length) {
+      archSimRunning = false;
+      btn.style.background = '#fff'; btn.style.color = '#000'; btn.textContent = '▶ RUN';
+      return;
+    }
+    const g = groups[step];
+    archNodes.filter(n => n.group === g).forEach(n => {
+      aEls[n.id].classList.add('highlight');
+      setTimeout(() => aEls[n.id].classList.remove('highlight'), 1500);
+    });
+    archWires.forEach((w,i) => {
+      const fn = archNodes.find(n => n.id === w.from);
+      const tn = archNodes.find(n => n.id === w.to);
+      if (fn.group === g || tn.group === g) {
+        const path = document.querySelector(`.arch-wire[data-idx="${i}"]`);
+        if (path) { path.classList.add('highlight'); setTimeout(() => path.classList.remove('highlight'), 1500); }
+      }
+    });
+    step++;
+    setTimeout(next, 1800);
+  }
+  next();
+}
+
+// Build arch when tab is first shown
+const origTabHandler = () => {
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'architecture') {
+        requestAnimationFrame(() => { buildArch(); });
+      }
+    });
+  });
+};
+origTabHandler();
+
 </script>
 </body>
 </html>

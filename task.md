@@ -80,7 +80,18 @@
 
 ---
 
-## Day 5 — Escalating Chaser Messages
+## Day 4.5 — Risk Priority Engine ✅
+
+- [x] Upgrade risk model from categorical to financially quantified priority queue
+- [x] Compute empirical P(late) per tier from ground truth
+- [x] Import live outstanding balances from reconciliation output
+- [x] Calculate Expected Amount at Risk (EAR = P(late) × Outstanding)
+- [x] Minimum history threshold (3 invoices) to prevent noise
+- [x] Output sorted by EAR descending — chase biggest ₹ risk first
+
+---
+
+## Day 5 — Escalating Chaser Messages ✅
 
 - [x] Define escalation tiers based on days overdue:
   - [x] 1-7 days: Polite reminder
@@ -94,6 +105,17 @@
   - [x] Pause auto-chasing until promise date passes
   - [x] Resume chasing if promise date passes without payment
 - [x] Output chaser message queue as structured data
+
+---
+
+## Day 5.5 — Risk-Driven Chaser Engine ✅
+
+- [x] Dynamic timeline bending based on risk priority queue
+  - [x] Critical (Top 20%): Compressed escalation timeline
+  - [x] Standard (Middle 60%): Normal timeline
+  - [x] Low (Bottom 20%): Stretched timeline
+- [x] Broken promise override — immediate escalation when promise date passes
+- [x] Queue sorted by expected_amount_at_risk
 
 ---
 
@@ -115,28 +137,37 @@
 
 ---
 
-## Day 7 — Test on Fresh Data + Report
+## Day 7 — Test on Fresh Data + Report ✅
 
-- [ ] Generate new held-out synthetic batch (never tuned on)
-- [ ] Run full pipeline end-to-end on fresh batch
-- [ ] Report metrics:
-  - [ ] Auto-match rate
-  - [ ] False-match rate
-  - [ ] Risk-tier accuracy
-- [ ] Document one honest failure case (e.g. a correctly-refused auto-match)
-- [ ] Save results to evaluation report
+- [x] Generate new held-out synthetic batch (seed 123, TST- prefix, 150 invoices, 133 txns)
+- [x] Run full pipeline end-to-end on fresh batch
+- [x] Report metrics:
+  - [x] Auto-match rate: **73.3% by count, 71.2% by ₹ value** (110/150 invoices, ₹1.12Cr/₹1.57Cr)
+  - [x] False-match rate: **0.9%** (1 wrong match out of 110)
+  - [x] Risk-tier accuracy: **79.2%** (38/48 clients)
+- [x] Break down match rate by engine pass (5-pass breakdown: reference/exact/TDS/combined/partial)
+- [x] Calculate rupee-weighted match rate (71.2% by ₹ value vs 73.3% by count)
+- [x] Quantify TDS pass contribution: **11 invoices, ₹6.07L recovered** that would've been dead ends
+- [x] Document honest failure case (TST-0592 — same-client collision in partial payment range)
+- [x] Root-cause analysis: narration typo + amount in partial range caused wrong-client match
+- [x] Save results to `output/day7_evaluation_report.md`
 
 ---
 
-## Day 8 — Pitch Video + Polish
+## Day 8 — Pitch Video + Polish ✅
 
 - [ ] Record 5-minute pitch video:
   - [ ] The 10-hrs/week problem
   - [ ] Live demo walkthrough
   - [ ] Three real numbers from Day 7
   - [ ] Projected impact on real business data
-- [ ] Write README with:
-  - [ ] Setup instructions
-  - [ ] Architecture diagram (Files In → Recon Engine → Risk Model → Chaser → Dashboard)
-  - [ ] How to run locally
-- [ ] Final code cleanup
+- [x] Write README with:
+  - [x] Setup instructions
+  - [x] Architecture diagram (interactive node-based flowchart)
+  - [x] How to run locally
+- [x] Build interactive architecture visualization:
+  - [x] Black & white node-based diagram (9 nodes, 13 connections)
+  - [x] Draggable nodes, click-to-expand details, pan/zoom
+  - [x] ▶ RUN simulation walks through pipeline step-by-step
+  - [x] Integrated as fullscreen tab in dashboard (← BACK + browser back)
+- [x] Final code cleanup
