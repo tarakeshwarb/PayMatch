@@ -262,8 +262,5 @@ function computeSummary(recon: any, priority: any, chaser: any[]) {
 }
 
 app.listen(PORT, () => {
-    console.log(`\n╔══════════════════════════════════════════╗`);
-    console.log(`║   PayMatch Dashboard — Day 6             ║`);
-    console.log(`║   http://localhost:${PORT}                  ║`);
-    console.log(`╚══════════════════════════════════════════╝\n`);
+    console.log(`Server listening on http://localhost:${PORT}`);
 });

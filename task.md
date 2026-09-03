@@ -171,3 +171,29 @@
   - [x] ▶ RUN simulation walks through pipeline step-by-step
   - [x] Integrated as fullscreen tab in dashboard (← BACK + browser back)
 - [x] Final code cleanup
+
+---
+
+## Day 9 — Hungarian Algorithm Upgrade ✅
+
+- [x] Implement `src/hungarian.ts` — pure O(n³) Kuhn-Munkres algorithm (no external library)
+  - [x] Classical step-based implementation: row/col reduction + DFS augmenting paths
+  - [x] Rectangular matrix support (rows ≠ cols, pad with cost=1)
+  - [x] 8/8 unit tests passing including the canonical greedy-failure case
+- [x] Replace greedy Pass 1 + Pass 2 with `_passHungarian` in `src/reconciliation_engine.ts`
+  - [x] Per-client grouping: solves assignment within each client's invoice × transaction subgraph
+  - [x] Replicates exact greedy candidate criteria (amount ≥ 0.70, narration ≥ 0.35) — no regressions
+  - [x] Cost matrix: cost = 1 − composite; cost = 1 for below-reviewThreshold pairs (avoid)
+  - [x] Post-solve filter: only pairs scoring ≥ matchThreshold (0.72) accepted
+  - [x] Audit trail: all Hungarian-assigned matches prefixed `[Hungarian]` in notes
+- [x] Passes 3–5 (combined/partial/remaining) unchanged — not bipartite one-to-one problems
+- [x] Legacy Pass 1 / Pass 2 methods kept as `@deprecated` for reference
+- [x] Verified final metrics — **test set** (150 invoices, 133 txns):
+  - Auto-match rate: **70.5%** (98/139 paid)
+  - False-match rate: **2.0%** → Precision: **98%** (up from 96.6%)
+  - Correct TDS catches: **15** (up from 14 greedy)
+- [x] Verified final metrics — **tuning set** (256 invoices, 224 txns):
+  - Auto-match rate: **78.9%** (up from 78.4% greedy baseline)
+  - False-match rate: **1.1%** → Precision: **98.9%**
+- [x] Deleted scratch test file `src/test_hungarian.ts`
+

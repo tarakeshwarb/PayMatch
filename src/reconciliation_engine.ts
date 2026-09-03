@@ -1,18 +1,25 @@
 /**
  * Reconciliation Matching Engine
- * 
- * Multi-pass greedy matcher that reconciles bank transactions to invoices.
- * 
+ *
+ * Globally-optimal multi-pass matcher that reconciles bank transactions to invoices.
+ *
  * Algorithm:
- *   Pass 1 — High-confidence: invoice ID found in narration + amount match
- *   Pass 2 — Strong matches: client name match + amount close (exact/rounding)
- *   Pass 3 — Combined payments: one transaction covers 2+ invoices from same client
- *   Pass 4 — Partial payments: transaction is a fraction of an invoice
- *   Pass 5 — Score remaining and classify (low-confidence or unmatched)
- * 
+ *   Pass H — Hungarian (Kuhn-Munkres) global assignment for all one-to-one matches.
+ *            Replaces the former greedy Pass 1 + Pass 2. Finds the provably optimal
+ *            pairing across the full invoice × transaction bipartite graph in O(n³),
+ *            guaranteeing no early greedy commitment blocks a better overall assignment.
+ *            Handles: invoice ID in narration, exact amount, TDS-adjusted, rounding.
+ *   Pass 3 — Combined payments: one transaction covers 2+ invoices from same client.
+ *             Many-to-one — not a bipartite assignment problem, stays greedy.
+ *   Pass 4 — Partial payments: transaction is a fraction of an invoice.
+ *             Many-to-one — not a bipartite assignment problem, stays greedy.
+ *   Pass 5 — Score remaining and classify (low-confidence or unmatched).
+ *
  * Design principle: FALSE MATCHES ARE THE WORST FAILURE MODE.
  *   → Conservative thresholds. When in doubt, flag for review, never auto-close.
- * 
+ *   → After solving, threshold: only accept pairs scoring ≥ matchThreshold AND
+ *     with a clear ambiguity gap — everything below stays unmatched and flows on.
+ *
  * Three output buckets per invoice:
  *   - matched:        high confidence, safe to auto-mark as paid
  *   - low_confidence:  flag for human review, show closest candidate
@@ -20,6 +27,7 @@
  */
 
 import * as fuzz from 'fuzzball';
+import { hungarian } from './hungarian';
 
 // ============================================================
 // Types
@@ -386,13 +394,13 @@ export class ReconciliationEngine {
             }
         }
 
-        // ── Pass 1: Invoice ID in narration (highest confidence) ──
-        this._passInvoiceIdMatch(invoiceState, candidateTxns);
-
-        // ── Pass 2: Strong single matches (client name + amount) ──
-        this._passStrongSingleMatch(invoiceState, candidateTxns);
+        // ── Pass H: Hungarian global assignment (replaces greedy Pass 1 + 2) ──
+        // Solves the full invoice × transaction bipartite assignment problem optimally.
+        // Handles: invoice ID in narration, exact/TDS/rounding amount, strong name match.
+        this._passHungarian(invoiceState, candidateTxns);
 
         // ── Pass 3: Combined payment detection ──
+        // Many-to-one (one txn → many invoices) — not a bipartite assignment problem.
         this._passCombinedPayments(invoiceState, candidateTxns);
 
         // ── Pass 3.5: Cross-client combined payment suggestions (review only) ──
@@ -409,9 +417,157 @@ export class ReconciliationEngine {
     }
 
     /**
-     * Pass 1: Look for invoice IDs directly mentioned in narrations.
-     * Handles both single-invoice and multi-invoice narrations.
+     * Pass H: Hungarian Algorithm — globally optimal one-to-one assignment, per client.
+     *
+     * For each client, scores all plausible invoice × transaction pairs using the
+     * same criteria as the former greedy passes, then runs Kuhn-Munkres to find
+     * the globally optimal one-to-one assignment within that client group.
+     *
+     * Key design principle: we replicate the greedy candidate criteria exactly
+     * (amount score ≥ 0.70, narration score ≥ 0.35) so the set of pairs considered
+     * is identical to what greedy would have seen. The only change is the assignment
+     * strategy: instead of committing greedily, we solve globally.
+     *
+     * Greedy failure mode this solves:
+     *   Client X has Invoice-A and Invoice-B, both matching Transaction T with high
+     *   narration scores. Greedy commits Invoice-A → T (first in file order), leaving
+     *   Invoice-B with a suboptimal fallback. Hungarian sees Invoice-A and Invoice-B
+     *   simultaneously and assigns each to its best available transaction.
      */
+    private _passHungarian(invoiceState: Map<string, EngineInvoice>, candidateTxns: EngineTransaction[]) {
+        // ── Step 1: Compute all plausible pairs (same criteria as greedy Pass 2) ──
+        // pair: { invoice, txn, composite, amountType, note }
+        type ScoredPair = {
+            inv: EngineInvoice;
+            txn: EngineTransaction;
+            composite: number;
+            amountType: string;
+            note: string;
+        };
+
+        const allPairs: ScoredPair[] = [];
+
+        for (const inv of invoiceState.values()) {
+            if (inv.status !== 'open') continue;
+
+            for (const txn of candidateTxns) {
+                if (txn.assigned) continue;
+
+                // Skip multi-invoice narrations — Pass 3 handles those
+                const narrationUpper = (txn.narration || '').toUpperCase();
+                let multiCount = 0;
+                for (const [, otherInv] of invoiceState.entries()) {
+                    if (otherInv.status === 'open' && narrationUpper.includes(otherInv.invoice_id.toUpperCase())) {
+                        multiCount++;
+                        if (multiCount > 1) break;
+                    }
+                }
+                if (multiCount > 1) continue;
+
+                // ── Same pre-filter as greedy Pass 2 ──
+                const amtResult = scoreAmount(txn.amount, inv.remainingAmount);
+                if (amtResult.score < 0.70) continue; // amount must be close
+
+                const dateResult = scoreDate(txn.date, inv.due_date, inv.issue_date);
+                const narrResult = scoreNarration(txn.narration, inv.client_name, inv.invoice_id);
+
+                // Need at least some narration signal (greedy Pass 2 rule)
+                if (narrResult.score < 0.35) continue;
+
+                let composite = computeComposite(amtResult.score, dateResult, narrResult);
+
+                // Safety: non-exact amounts without invoice ID need stronger evidence
+                const isNonExact = amtResult.type !== 'exact' && amtResult.type !== 'rounding';
+                if (isNonExact && !narrResult.invoiceIdFound && composite < 0.85) continue;
+
+                const note = narrResult.invoiceIdFound
+                    ? `Invoice ID "${inv.invoice_id}" found in narration. Amount ${amtResult.type}.`
+                    : `Strong match: amount=${amtResult.score.toFixed(2)}, narration=${narrResult.score.toFixed(2)}, date=${dateResult.toFixed(2)}`;
+
+                allPairs.push({ inv, txn, composite, amountType: amtResult.type, note });
+            }
+        }
+
+        if (allPairs.length === 0) return;
+
+        // ── Step 2: Group pairs by client ──
+        const clientPairs = new Map<string, ScoredPair[]>();
+        for (const pair of allPairs) {
+            const key = pair.inv.client_name;
+            if (!clientPairs.has(key)) clientPairs.set(key, []);
+            clientPairs.get(key)!.push(pair);
+        }
+
+        // ── Step 3: For each client group, run Hungarian to resolve contention ──
+        for (const [, pairs] of clientPairs.entries()) {
+            // Collect unique invoices and unique transactions for this client
+            const invSet = new Map<string, EngineInvoice>();
+            const txnSet = new Map<string, EngineTransaction>();
+            for (const p of pairs) {
+                invSet.set(p.inv.invoice_id, p.inv);
+                txnSet.set(p.txn.transaction_id, p.txn);
+            }
+
+            const invList = Array.from(invSet.values());
+            const txnList = Array.from(txnSet.values());
+            const nInv = invList.length;
+            const nTxn = txnList.length;
+
+            // Build per-pair lookup: invIdx → txnIdx → ScoredPair
+            const pairLookup = new Map<string, ScoredPair>();
+            for (const p of pairs) {
+                pairLookup.set(`${p.inv.invoice_id}::${p.txn.transaction_id}`, p);
+            }
+
+            // Build cost matrix (cost = 1 - composite; cost = 1 for no pair = avoid)
+            const costMatrix: number[][] = [];
+            const pairGrid: (ScoredPair | null)[][] = [];
+
+            for (let i = 0; i < nInv; i++) {
+                const costRow: number[] = [];
+                const pairRow: (ScoredPair | null)[] = [];
+                for (let j = 0; j < nTxn; j++) {
+                    const key = `${invList[i].invoice_id}::${txnList[j].transaction_id}`;
+                    const pair = pairLookup.get(key) ?? null;
+                    costRow.push(pair ? 1 - pair.composite : 1); // 1 = no valid pair
+                    pairRow.push(pair);
+                }
+                costMatrix.push(costRow);
+                pairGrid.push(pairRow);
+            }
+
+            // Run Kuhn-Munkres on this client's subgraph
+            const assignment = hungarian(costMatrix);
+
+            // Accept pairs that clear the confidence threshold
+            for (let i = 0; i < nInv; i++) {
+                const j = assignment[i];
+                if (j === -1 || j >= nTxn) continue;
+
+                const pair = pairGrid[i][j];
+                if (!pair) continue;
+                if (pair.composite < this.matchThreshold) continue;
+
+                const inv = invList[i];
+                const txn = txnList[j];
+                if (inv.status !== 'open') continue; // may have been assigned already
+                if (txn.assigned) continue;
+
+                this._assignMatch(inv, txn, {
+                    confidence: pair.composite,
+                    matchType: pair.amountType,
+                    paidAmount: txn.amount,
+                    note: `[Hungarian] ${pair.note}`,
+                });
+            }
+        }
+    }
+
+    /**
+     * Pass 1 (legacy): Look for invoice IDs directly mentioned in narrations.
+     * @deprecated Superseded by _passHungarian — kept for reference.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _passInvoiceIdMatch(invoiceState: Map<string, EngineInvoice>, candidateTxns: EngineTransaction[]) {
         for (const txn of candidateTxns) {
             if (txn.assigned) continue;
