@@ -77,6 +77,55 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
 
     const errors: ErrorCase[] = []; // detailed error cases
 
+    // ── Duplicate-assignment sanity check ──
+    // No invoice should be assigned more than once, and no transaction should
+    // be consumed by two different invoices.  This catches bugs in Hungarian
+    // output or in the later sequential passes.
+    const assignedInvoices = new Map<string, string>();   // inv_id → txn_id
+    const assignedTxns     = new Map<string, string>();   // txn_id → inv_id
+    let duplicateAssignments = 0;
+
+    for (const result of results) {
+        if (result.status !== 'matched' && result.status !== 'partial') continue;
+        for (const mt of (result.matched_transactions || [])) {
+            const txnId = mt.transaction_id;
+            // Check invoice duplicate
+            if (assignedInvoices.has(result.invoice_id)) {
+                duplicateAssignments++;
+                errors.push({
+                    invoice_id: result.invoice_id,
+                    type: 'duplicate_invoice_assignment',
+                    detail: `Invoice assigned to both ${assignedInvoices.get(result.invoice_id)} and ${txnId}`,
+                    severity: 'CRITICAL',
+                });
+            }
+            assignedInvoices.set(result.invoice_id, txnId);
+
+            // Check transaction duplicate (skip combined-payment txns — they legitimately map to multiple invoices)
+            if (assignedTxns.has(txnId)) {
+                const prevInv = assignedTxns.get(txnId)!;
+                // Only flag if neither side is a combined payment
+                const prevResult = results.find((r: any) => r.invoice_id === prevInv);
+                const isCombined = result.match_type === 'combined' ||
+                                   prevResult?.match_type === 'combined';
+                if (!isCombined) {
+                    duplicateAssignments++;
+                    errors.push({
+                        invoice_id: result.invoice_id,
+                        type: 'duplicate_txn_assignment',
+                        detail: `Transaction ${txnId} also assigned to ${prevInv}`,
+                        severity: 'CRITICAL',
+                    });
+                }
+            }
+            assignedTxns.set(txnId, result.invoice_id);
+        }
+    }
+
+    // ── Rupee-weighted match rate tracking ──
+    let totalPaidRupees = 0;        // sum of invoice amounts that *should* be matched (GT)
+    let correctlyMatchedRupees = 0; // sum of invoice amounts we *did* match correctly
+
     for (const result of results) {
         const gtEntries = gtMap.get(result.invoice_id) || [];
         const gtEntry = gtEntries[0]; // primary ground truth
@@ -93,6 +142,12 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
         const gtTxnId = gtEntry.transaction_id || '';
         const gtMatchType = gtEntry.match_type;
         const isGtPaid = gtMatchType !== 'unpaid' && gtTxnId !== '';
+        const invoiceAmount = parseFloat(result.invoice_amount) || 0;
+
+        // Accumulate rupee denominator for all invoices that GT says are paid
+        if (isGtPaid) {
+            totalPaidRupees += invoiceAmount;
+        }
 
         if (result.status === 'matched' || result.status === 'partial') {
             // Engine says this invoice is paid
@@ -102,6 +157,7 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
                 // Ground truth says it IS paid
                 if (matchedTxnId === gtTxnId) {
                     truePositives++;
+                    correctlyMatchedRupees += invoiceAmount;
                     if (gtMatchType === 'partial') correctPartials++;
                     if (gtMatchType === 'combined') correctCombined++;
                     if (gtMatchType === 'tds') correctTds++;
@@ -181,6 +237,10 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
     const recall = uniquePaidInvoices > 0
         ? truePositives / uniquePaidInvoices : 0;
 
+    // Rupee-weighted match rate
+    const rupeeMatchRate = totalPaidRupees > 0
+        ? correctlyMatchedRupees / totalPaidRupees : 0;
+
     return {
         metrics: {
             auto_match_rate: +(autoMatchRate * 100).toFixed(1),
@@ -196,6 +256,12 @@ function evaluate(results: any[], groundTruth: GroundTruth[]) {
             correct_tds: correctTds,
             total_paid_in_gt: uniquePaidInvoices,
             total_unpaid_in_gt: totalUnpaid,
+            // Rupee-weighted
+            rupee_match_rate: +(rupeeMatchRate * 100).toFixed(1),
+            correctly_matched_rupees: Math.round(correctlyMatchedRupees),
+            total_paid_rupees: Math.round(totalPaidRupees),
+            // Integrity
+            duplicate_assignments: duplicateAssignments,
         },
         errors: errors.sort((a, b) => {
             const sev: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
@@ -246,6 +312,19 @@ function main() {
     console.log(`  Correct partials:   ${metrics.correct_partials}`);
     console.log(`  Correct combined:   ${metrics.correct_combined}`);
     console.log(`  Correct TDS:        ${metrics.correct_tds}`);
+
+    // Rupee-weighted match rate
+    const fmtRs = (v: number) => v >= 1e7 ? `${(v / 1e7).toFixed(2)}Cr` : v >= 1e5 ? `${(v / 1e5).toFixed(2)}L` : `${v}`;
+    console.log(`\n── RUPEE-WEIGHTED MATCH RATE ──`);
+    console.log(`  By invoice count:   ${metrics.auto_match_rate}% (${metrics.true_positives}/${metrics.total_paid_in_gt})`);
+    console.log(`  By rupee value:     ${metrics.rupee_match_rate}% (Rs.${fmtRs(metrics.correctly_matched_rupees)} / Rs.${fmtRs(metrics.total_paid_rupees)})`);
+
+    // Integrity check
+    if (metrics.duplicate_assignments > 0) {
+        console.log(`\n  ⛔ INTEGRITY FAILURE: ${metrics.duplicate_assignments} duplicate assignment(s) detected!`);
+    } else {
+        console.log(`  ✅ Integrity check: no duplicate assignments (invoices or transactions)`);
+    }
 
     if (errors.length > 0) {
         console.log(`\n── ERRORS & EDGE CASES (${errors.length}) ──`);

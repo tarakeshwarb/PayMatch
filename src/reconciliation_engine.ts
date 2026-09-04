@@ -9,11 +9,15 @@
  *            pairing across the full invoice × transaction bipartite graph in O(n³),
  *            guaranteeing no early greedy commitment blocks a better overall assignment.
  *            Handles: invoice ID in narration, exact amount, TDS-adjusted, rounding.
- *   Pass 3 — Combined payments: one transaction covers 2+ invoices from same client.
+ *   Pass 3   — Combined payments: one transaction covers 2+ invoices from same client.
  *             Many-to-one — not a bipartite assignment problem, stays greedy.
- *   Pass 4 — Partial payments: transaction is a fraction of an invoice.
+ *   Pass 3.5 — Cross-client combined payments: one transaction covers invoices from
+ *             two or more *different* clients (e.g. a bulk remittance with no narration).
+ *             Distinct from Pass 3 — cannot use client-name signal to narrow candidates.
+ *             NEVER auto-matches; only surfaces candidates for human review.
+ *   Pass 4   — Partial payments: transaction is a fraction of an invoice.
  *             Many-to-one — not a bipartite assignment problem, stays greedy.
- *   Pass 5 — Score remaining and classify (low-confidence or unmatched).
+ *   Pass 5   — Score remaining and classify (low-confidence or unmatched).
  *
  * Design principle: FALSE MATCHES ARE THE WORST FAILURE MODE.
  *   → Conservative thresholds. When in doubt, flag for review, never auto-close.
