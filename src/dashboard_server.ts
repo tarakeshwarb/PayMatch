@@ -18,7 +18,7 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const BASE_DIR = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(BASE_DIR, 'output');
 const DATA_DIR = path.join(BASE_DIR, 'data', 'tuning');
